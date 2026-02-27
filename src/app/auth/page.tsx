@@ -1,8 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth, useUser } from '@/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
@@ -67,8 +69,21 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] grid place-items-center px-4 py-12 relative bg-background">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-[calc(100vh-64px)] grid place-items-center px-4 py-12 relative bg-background overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <Image
+          src="https://picsum.photos/seed/tech/1920/1080"
+          alt="Technical background"
+          fill
+          className="object-cover opacity-20"
+          priority
+          data-ai-hint="tech background"
+        />
+        <div className="absolute inset-0 bg-linear-to-b from-background via-transparent to-background" />
+      </div>
+
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
       
       <div className="w-full max-w-lg relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8 group font-bold">
@@ -111,8 +126,8 @@ export default function AuthPage() {
 
               <div className="grid grid-cols-1 gap-4 w-full">
                 <Button 
-                  variant="outline" 
-                  className="h-11 border-white/10 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover no-grey-hover shadow-sm"
+                  variant="ghost" 
+                  className="h-11 border-white/10 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover no-grey-hover shadow-sm border bg-transparent hover:bg-transparent"
                   onClick={handleGoogleAuth}
                   disabled={isLoading}
                 >

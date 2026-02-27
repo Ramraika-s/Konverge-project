@@ -70,7 +70,7 @@ export default function Home() {
             fill
             className="object-cover opacity-20"
             priority
-            data-ai-hint="modern office"
+            data-ai-hint="Main Page Background"
           />
           <div className="absolute inset-0 bg-linear-to-b from-background via-transparent to-background" />
         </div>

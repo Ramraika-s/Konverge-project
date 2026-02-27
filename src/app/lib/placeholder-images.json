@@ -8,6 +8,12 @@
       "imageHint": "modern office"
     },
     {
+      "id": "auth-bg",
+      "description": "Technical abstract background for authentication",
+      "imageUrl": "https://picsum.photos/seed/tech/1920/1080",
+      "imageHint": "tech background"
+    },
+    {
       "id": "student-avatar",
       "description": "Professional student headshot",
       "imageUrl": "https://picsum.photos/seed/student1/200/200",
