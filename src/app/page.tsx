@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -8,16 +9,72 @@ import Image from 'next/image';
 
 export default function Home() {
   const [displayText, setDisplayText] = useState('');
-  const fullText = "We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for job seekers.";
+  const [showCursor, setShowCursor] = useState(true);
   
   useEffect(() => {
+    const firstText = "We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for job seekers.";
+    const secondText = "Never Miss an Opportunity Again";
+    
     let i = 0;
-    const timer = setInterval(() => {
-      setDisplayText(fullText.slice(0, i));
-      i++;
-      if (i > fullText.length) clearInterval(timer);
+    let phase = 1; // 1: typing 1st, 2: deleting, 3: typing 2nd
+
+    const typingInterval = setInterval(() => {
+      if (phase === 1) {
+        setDisplayText(firstText.slice(0, i));
+        i++;
+        if (i > firstText.length) {
+          clearInterval(typingInterval);
+          setTimeout(() => {
+            phase = 2;
+            startNextPhase();
+          }, 1500);
+        }
+      } else if (phase === 2) {
+        setDisplayText(firstText.slice(0, i));
+        i--;
+        if (i < 0) {
+          clearInterval(typingInterval);
+          setTimeout(() => {
+            phase = 3;
+            i = 0;
+            startNextPhase();
+          }, 500);
+        }
+      } else if (phase === 3) {
+        setDisplayText(secondText.slice(0, i));
+        i++;
+        if (i > secondText.length) {
+          clearInterval(typingInterval);
+          setShowCursor(false);
+        }
+      }
     }, 30);
-    return () => clearInterval(timer);
+
+    const startNextPhase = () => {
+      const nextInterval = setInterval(() => {
+        if (phase === 2) {
+          setDisplayText(firstText.slice(0, i));
+          i--;
+          if (i < 0) {
+            clearInterval(nextInterval);
+            setTimeout(() => {
+              phase = 3;
+              i = 0;
+              startNextPhase();
+            }, 500);
+          }
+        } else if (phase === 3) {
+          setDisplayText(secondText.slice(0, i));
+          i++;
+          if (i > secondText.length) {
+            clearInterval(nextInterval);
+            setShowCursor(false);
+          }
+        }
+      }, phase === 2 ? 15 : 40);
+    };
+
+    return () => clearInterval(typingInterval);
   }, []);
 
   return (
@@ -47,7 +104,7 @@ export default function Home() {
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed min-h-[3.5em]">
             {displayText}
-            <span className="animate-pulse border-r-2 border-primary ml-1"></span>
+            {showCursor && <span className="animate-pulse border-r-2 border-primary ml-1"></span>}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/jobs">

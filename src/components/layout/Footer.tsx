@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -21,7 +22,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              The premium bridge between ambitious student talent and innovative global companies. Elevating the future of work through data-driven matching.
+              The premium bridge between ambitious job seeker talent and innovative global companies. Elevating the future of work through data-driven matching.
             </p>
             <div className="flex items-center gap-4">
               <Link href="#" className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/10 transition-all">
