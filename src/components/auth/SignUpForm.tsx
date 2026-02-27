@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -123,16 +122,17 @@ export function SignUpForm() {
   };
 
   return (
-    <form onSubmit={handleSignUp} className="flex flex-col h-full max-h-[600px]">
+    <form onSubmit={handleSignUp} className="w-full">
       {error && (
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-6">
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-xs font-bold">{error}</AlertDescription>
         </Alert>
       )}
 
-      <ScrollArea className="flex-1 w-full rounded-md pr-4">
-        <div className="space-y-8 pb-12 px-1">
+      {/* FIXED: Replaced flex-1 with an explicit height so Shadcn knows exactly when to trigger the scrollbar */}
+      <ScrollArea className="h-[380px] w-full rounded-md pr-4">
+        <div className="space-y-8 pb-6 px-1">
           <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all mx-1">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold flex items-center gap-2">
@@ -252,11 +252,13 @@ export function SignUpForm() {
         </div>
       </ScrollArea>
 
-      <div className="pt-8 pb-4 border-t border-white/5 bg-card/50 backdrop-blur-sm -mx-8 px-8 mt-4 rounded-b-3xl shrink-0">
+      {/* FIXED: Removed the messy negative margins and rounded-b-3xl. 
+          It now sits cleanly between the scroll area and the CardFooter from page.tsx */}
+      <div className="pt-6">
         <Button 
           type="submit"
           disabled={isLoading}
-          className="w-full h-14 font-black text-lg gold-border-glow rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full h-14 font-black text-lg gold-border-glow rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
