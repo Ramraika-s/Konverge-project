@@ -2,8 +2,8 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Briefcase, LayoutDashboard, Search, User, LogOut, Menu } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Briefcase, LayoutDashboard, Search, User, LogOut, Menu, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -14,15 +14,26 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 export function Navbar() {
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock auth state
+  const router = useRouter();
+  const { auth } = useAuth();
+  const { user, isUserLoading } = useUser();
   
   const navLinks = [
     { name: 'Find Jobs', href: '/jobs', icon: Search },
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   ];
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/');
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,28 +65,30 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-4">
-            {!isLoggedIn ? (
+            {isUserLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            ) : !user ? (
               <>
-                <Link href="/auth/login">
+                <Link href="/auth">
                   <Button variant="ghost" className="text-sm font-medium">Log In</Button>
                 </Link>
-                <Link href="/auth/signup">
+                <Link href="/auth">
                   <Button className="text-sm font-bold gold-border-glow">Sign Up</Button>
                 </Link>
               </>
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-secondary/50 border border-white/5">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56 glass-card border-white/10">
+                  <DropdownMenuItem className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" /> Profile
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" /> Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -90,7 +103,7 @@ export function Navbar() {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-background">
+              <SheetContent side="right" className="bg-background border-l-white/5">
                 <div className="flex flex-col gap-6 mt-8">
                   {navLinks.map((link) => (
                     <Link
@@ -102,13 +115,14 @@ export function Navbar() {
                       {link.name}
                     </Link>
                   ))}
-                  <hr className="border-border" />
-                  <Link href="/auth/login">
-                    <Button variant="ghost" className="w-full justify-start">Log In</Button>
-                  </Link>
-                  <Link href="/auth/signup">
-                    <Button className="w-full">Sign Up</Button>
-                  </Link>
+                  <hr className="border-white/5" />
+                  {!user ? (
+                    <Link href="/auth">
+                      <Button className="w-full gold-border-glow">Get Started</Button>
+                    </Link>
+                  ) : (
+                    <Button variant="destructive" className="w-full" onClick={handleLogout}>Log Out</Button>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
