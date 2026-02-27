@@ -65,15 +65,15 @@ export function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <span>One Innovation Plaza, San Francisco, CA 94103</span>
+                <span>Loc: Bhubaneshwar, India</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span>+1 (800) KONNEX-HIRE</span>
+                <span>Contact No.: 1800-DUMMYNUMBER</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span>hello@konnex.io</span>
+                <span>Email: helpdesk@thenullpointers.com</span>
               </li>
             </ul>
           </div>
