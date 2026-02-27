@@ -112,7 +112,7 @@ export default function AuthPage() {
               <div className="grid grid-cols-1 gap-4 w-full">
                 <Button 
                   variant="outline" 
-                  className="h-11 border-white/10 hover:bg-transparent rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover"
+                  className="h-11 border-white/10 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover no-grey-hover shadow-sm"
                   onClick={handleGoogleAuth}
                   disabled={isLoading}
                 >

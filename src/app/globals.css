@@ -115,3 +115,7 @@
   box-shadow: 0 0 15px rgba(234, 179, 8, 0.15) !important;
   color: rgba(234, 179, 8, 1) !important;
 }
+
+.no-grey-hover:hover {
+  background-color: transparent !important;
+}

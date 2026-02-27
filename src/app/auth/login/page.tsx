@@ -50,11 +50,16 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="h-11 border-white/10 hover:bg-transparent relative overflow-hidden gold-shine-hover transition-all">Google</Button>
+              <Button 
+                variant="outline" 
+                className="h-11 border-white/10 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover no-grey-hover shadow-sm"
+              >
+                Google
+              </Button>
               <Button variant="outline" className="h-11 border-white/10 hover:bg-white/5">LinkedIn</Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Don&apos;t have an account? <Link href="/auth/signup" className="text-primary font-bold hover:underline">Sign up for free</Link>
+              Don&apos;t have an account? <Link href="/auth#signup" className="text-primary font-bold hover:underline">Sign up for free</Link>
             </p>
           </CardFooter>
         </Card>
