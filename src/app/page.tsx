@@ -72,7 +72,7 @@ export default function Home() {
             priority
             data-ai-hint="modern office"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+          <div className="absolute inset-0 bg-linear-to-b from-background via-transparent to-background" />
         </div>
         
         <div className="container relative z-10 px-4 text-center">

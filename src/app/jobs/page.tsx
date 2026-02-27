@@ -208,7 +208,7 @@ export default function JobsPage() {
           
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-grow">
+              <div className="relative grow">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input 
                   placeholder="Role title, skills, or keywords..." 
@@ -239,7 +239,7 @@ export default function JobsPage() {
               {['Remote', 'On-site', 'Hybrid'].map(mode => (
                 <Badge 
                   key={mode}
-                  variant={selectedWorkMode.includes(mode) ? 'default' : 'outline'}
+                  variant={selectedWorkMode.includes(mode) ? 'default' : 'outline-solid'}
                   className={`cursor-pointer px-4 py-1.5 rounded-full text-xs font-bold transition-all border-white/10 ${
                     selectedWorkMode.includes(mode) ? 'bg-primary text-primary-foreground' : 'hover:bg-white/5'
                   }`}

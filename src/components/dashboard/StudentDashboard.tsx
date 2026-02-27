@@ -97,7 +97,7 @@ export function StudentDashboard() {
           <h2 className="text-2xl font-bold">Recommended</h2>
           <div className="space-y-4">
             {[1, 2].map((i) => (
-              <Card key={i} className="glass-card border-none bg-gradient-to-br from-card to-secondary/50">
+              <Card key={i} className="glass-card border-none bg-linear-to-br from-card to-secondary/50">
                 <CardHeader className="p-5">
                   <div className="flex justify-between items-start mb-4">
                     <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">

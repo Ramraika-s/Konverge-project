@@ -186,7 +186,7 @@ export default function ApplicantsPage() {
         <div className="grid gap-6 animate-in fade-in duration-700">
           {paginatedApplicants.length > 0 ? (
             paginatedApplicants.map((app) => (
-              <Card key={app.id} className="glass-card border-white/5 hover:border-primary/30 transition-all duration-300 rounded-[2rem] overflow-hidden group">
+              <Card key={app.id} className="glass-card border-white/5 hover:border-primary/30 transition-all duration-300 rounded-4xl overflow-hidden group">
                 <CardContent className="p-0">
                   <div className="flex flex-col lg:flex-row">
                     {/* Left Section: Profile Info */}
@@ -267,7 +267,7 @@ export default function ApplicantsPage() {
               </Card>
             ))
           ) : (
-            <div className="py-24 text-center glass-card rounded-[2rem] border-dashed">
+            <div className="py-24 text-center glass-card rounded-4xl border-dashed">
                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="w-8 h-8 text-muted-foreground" />
                 </div>

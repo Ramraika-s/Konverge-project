@@ -73,7 +73,7 @@ export function EmployerDashboard() {
           <Button variant="ghost" className="text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">View History</Button>
         </div>
         
-        <div className="glass-card rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
+        <div className="glass-card rounded-4xl overflow-hidden border border-white/5 shadow-2xl">
           <div className="hidden md:grid grid-cols-[1fr_140px_140px_140px_80px] gap-4 p-6 border-b border-white/5 bg-white/2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
             <div>Position Details</div>
             <div className="text-center">Applicant Count</div>
