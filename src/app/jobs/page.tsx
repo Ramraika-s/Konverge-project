@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,8 @@ import {
   Users,
   SearchCode,
   Globe,
-  Navigation
+  Navigation,
+  Building2
 } from 'lucide-react';
 import { 
   Card, 
@@ -42,27 +43,47 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-// Data Structures
+// Expanded Professional Categories
 const ROLE_CATEGORIES = [
   {
     id: 'eng',
-    name: 'Engineering',
-    subcategories: ['Frontend', 'Backend', 'Fullstack', 'DevOps', 'Mobile', 'QA']
+    name: 'Engineering & Tech',
+    subcategories: ['Frontend', 'Backend', 'Fullstack', 'DevOps', 'Mobile', 'Data Science', 'AI/ML', 'Cybersecurity']
   },
   {
-    id: 'des',
-    name: 'Design',
-    subcategories: ['UI/UX', 'Product Design', 'Graphic Design', 'Motion Design', 'User Research']
-  },
-  {
-    id: 'mkt',
-    name: 'Marketing',
-    subcategories: ['Content', 'SEO', 'Performance', 'Social Media', 'Brand']
+    id: 'fin',
+    name: 'Finance & Accounting',
+    subcategories: ['Investment Banking', 'Corporate Finance', 'Audit', 'Tax', 'Wealth Management', 'FinTech']
   },
   {
     id: 'biz',
-    name: 'Business',
-    subcategories: ['Sales', 'Operations', 'Strategy', 'Finance', 'HR']
+    name: 'Business & Operations',
+    subcategories: ['Strategy', 'Project Management', 'Operations', 'Supply Chain', 'Logistics', 'Procurement']
+  },
+  {
+    id: 'mkt',
+    name: 'Marketing & PR',
+    subcategories: ['Brand Management', 'Digital Marketing', 'Content Strategy', 'SEO', 'Market Research', 'Public Relations']
+  },
+  {
+    id: 'des',
+    name: 'Design & Creative',
+    subcategories: ['UI/UX', 'Product Design', 'Graphic Design', 'Motion Graphics', 'User Research', 'Architecture']
+  },
+  {
+    id: 'hr',
+    name: 'Human Resources',
+    subcategories: ['Talent Acquisition', 'L&D', 'Compensation & Benefits', 'Employee Relations', 'HR Analytics']
+  },
+  {
+    id: 'leg',
+    name: 'Legal & Compliance',
+    subcategories: ['Corporate Law', 'Intellectual Property', 'Compliance', 'Risk Management', 'Public Policy']
+  },
+  {
+    id: 'sales',
+    name: 'Sales & BD',
+    subcategories: ['Account Management', 'Enterprise Sales', 'Inside Sales', 'Business Development']
   }
 ];
 
@@ -82,11 +103,29 @@ const MOCK_JOBS = [
     tags: ['React', 'TypeScript', 'Tailwind'],
     isVerified: true,
     applicants: 48,
-    category: 'Engineering',
+    category: 'Engineering & Tech',
     logoSeed: 'nexustech-logo'
   },
   {
     id: '2',
+    title: 'Financial Analyst',
+    company: 'Global Capital',
+    location: 'New York, NY',
+    workMode: 'On-site',
+    type: 'Full-time',
+    duration: 'Full-time',
+    stipend: '6500',
+    currency: 'USD',
+    postedAt: '1 day ago',
+    description: 'Manage corporate investment portfolios and perform market risk analysis.',
+    tags: ['Excel', 'Risk Analysis', 'Bloomberg'],
+    isVerified: true,
+    applicants: 22,
+    category: 'Finance & Accounting',
+    logoSeed: 'finguard-logo'
+  },
+  {
+    id: '3',
     title: 'Product Design Intern',
     company: 'CreativeFlow',
     location: 'San Francisco, CA',
@@ -100,63 +139,8 @@ const MOCK_JOBS = [
     tags: ['Figma', 'UI/UX', 'Prototyping'],
     isVerified: true,
     applicants: 12,
-    category: 'Design',
+    category: 'Design & Creative',
     logoSeed: 'creativeflow-logo'
-  },
-  {
-    id: '3',
-    title: 'Backend Developer (Summer)',
-    company: 'FinGuard',
-    location: 'New York, NY',
-    workMode: 'Hybrid',
-    type: 'Contract',
-    duration: '12 Weeks',
-    stipend: '5000',
-    currency: 'USD',
-    postedAt: '1 week ago',
-    description: 'Build secure financial APIs using Node.js and PostgreSQL.',
-    tags: ['Node.js', 'PostgreSQL', 'Security'],
-    isVerified: false,
-    applicants: 156,
-    category: 'Engineering',
-    logoSeed: 'finguard-logo'
-  },
-  {
-    id: '4',
-    title: 'Data Science Assistant',
-    company: 'Insights.ai',
-    location: 'Austin, TX',
-    workMode: 'On-site',
-    type: 'Part-time',
-    duration: 'Ongoing',
-    stipend: '25',
-    currency: 'USD',
-    rateType: 'hr',
-    postedAt: '3 days ago',
-    description: 'Analyze large datasets to drive business decisions for global retailers.',
-    tags: ['Python', 'SQL', 'Pandas'],
-    isVerified: true,
-    applicants: 8,
-    category: 'Engineering',
-    logoSeed: 'insightsai-logo'
-  },
-  {
-    id: '5',
-    title: 'Sales Operations Coordinator',
-    company: 'ScaleUp',
-    location: 'Remote',
-    workMode: 'Remote',
-    type: 'Full-time',
-    duration: 'Full-time',
-    stipend: '',
-    currency: 'USD',
-    postedAt: '1 day ago',
-    description: 'Optimize our sales processes and support the global sales team.',
-    tags: ['CRM', 'Analysis', 'Strategy'],
-    isVerified: true,
-    applicants: 24,
-    category: 'Business',
-    logoSeed: 'scaleup-logo'
   }
 ];
 
@@ -168,15 +152,44 @@ export default function JobsPage() {
   const [salaryRange, setSalaryRange] = useState([0]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
+  // Intelligent Category Filtering
   const filteredCategories = useMemo(() => {
     if (!categorySearch) return ROLE_CATEGORIES;
     const lowerSearch = categorySearch.toLowerCase();
-    return ROLE_CATEGORIES.filter(cat => 
-      cat.name.toLowerCase().includes(lowerSearch) ||
-      cat.subcategories.some(sub => sub.toLowerCase().includes(lowerSearch))
-    );
+    
+    return ROLE_CATEGORIES.map(cat => {
+      const isCategoryMatch = cat.name.toLowerCase().includes(lowerSearch);
+      const matchedSubcategories = cat.subcategories.filter(sub => 
+        sub.toLowerCase().includes(lowerSearch)
+      );
+      
+      if (isCategoryMatch || matchedSubcategories.length > 0) {
+        return {
+          ...cat,
+          // If searching, only show matched subcategories
+          subcategories: isCategoryMatch ? cat.subcategories : matchedSubcategories,
+          isExplicitMatch: true
+        };
+      }
+      return null;
+    }).filter(Boolean) as any[];
   }, [categorySearch]);
+
+  // Handle auto-expansion of accordion items based on search results
+  useEffect(() => {
+    if (categorySearch) {
+      if (filteredCategories.length === 1) {
+        setOpenAccordions([filteredCategories[0].id]);
+      } else {
+        // If searching and multiple results, we keep them collapsed or allow user to toggle
+        // But we want to ensure any subcategory match makes the category potentially relevant
+      }
+    } else {
+      setOpenAccordions([]);
+    }
+  }, [filteredCategories, categorySearch]);
 
   const showLocationSearch = selectedWorkMode.includes('On-site') || selectedWorkMode.includes('Hybrid');
 
@@ -211,7 +224,7 @@ export default function JobsPage() {
               Premium <span className="text-primary gold-glow">Career Streams</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl">
-              Verified opportunities from innovative companies, organized for clarity and results.
+              Verified opportunities across the corporate landscape, from Tech and Finance to Legal and Strategy.
             </p>
           </div>
           
@@ -220,6 +233,7 @@ export default function JobsPage() {
               <div className="relative grow">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input 
+                  aria-label="Search jobs"
                   placeholder="Role title, skills, or keywords..." 
                   className="pl-12 h-14 bg-card/50 border-white/5 rounded-2xl focus:ring-primary/50 text-lg"
                   value={searchQuery}
@@ -231,6 +245,7 @@ export default function JobsPage() {
                 <div className="relative md:w-[250px] animate-in slide-in-from-left-2 duration-300">
                   <Navigation className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                   <Input 
+                    aria-label="Search location"
                     placeholder="City or Country..." 
                     className="pl-10 h-14 bg-card/50 border-white/5 rounded-2xl"
                     value={locationQuery}
@@ -244,7 +259,7 @@ export default function JobsPage() {
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3" role="group" aria-label="Work mode filters">
               {['Remote', 'On-site', 'Hybrid'].map(mode => (
                 <Badge 
                   key={mode}
@@ -253,6 +268,8 @@ export default function JobsPage() {
                     selectedWorkMode.includes(mode) ? 'bg-primary text-primary-foreground' : 'hover:bg-white/5'
                   }`}
                   onClick={() => toggleWorkMode(mode)}
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && toggleWorkMode(mode)}
                 >
                   {mode === 'Remote' && <Globe className="w-3 h-3 mr-1.5" />}
                   {mode}
@@ -269,13 +286,21 @@ export default function JobsPage() {
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
                   <Filter className="w-4 h-4" /> Filters
                 </h3>
-                <Button variant="ghost" size="sm" className="text-[10px] uppercase font-bold text-muted-foreground h-auto p-0 hover:bg-transparent" onClick={() => {
-                  setSelectedWorkMode([]);
-                  setSelectedCategories([]);
-                  setSelectedSubcategories([]);
-                  setSalaryRange([0]);
-                  setCategorySearch('');
-                }}>Reset</Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-[10px] uppercase font-bold text-muted-foreground h-auto p-0 hover:bg-transparent" 
+                  onClick={() => {
+                    setSelectedWorkMode([]);
+                    setSelectedCategories([]);
+                    setSelectedSubcategories([]);
+                    setSalaryRange([0]);
+                    setCategorySearch('');
+                    setOpenAccordions([]);
+                  }}
+                >
+                  Reset
+                </Button>
               </div>
 
               <div className="space-y-4">
@@ -283,6 +308,7 @@ export default function JobsPage() {
                 <div className="relative">
                   <SearchCode className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input 
+                    aria-label="Search role categories"
                     placeholder="Search roles..." 
                     className="h-9 pl-9 text-xs bg-white/5 border-white/5 rounded-xl"
                     value={categorySearch}
@@ -290,15 +316,21 @@ export default function JobsPage() {
                   />
                 </div>
                 
-                <Accordion type="multiple" className="w-full">
+                <Accordion 
+                  type="multiple" 
+                  value={openAccordions} 
+                  onValueChange={setOpenAccordions}
+                  className="w-full"
+                >
                   {filteredCategories.map((cat) => (
                     <AccordionItem key={cat.id} value={cat.id} className="border-white/5">
-                      <div className="flex items-center gap-2 w-full pr-2 group">
+                      <div className="flex items-center gap-2 w-full pr-2">
                         <Checkbox 
                           id={`cat-${cat.id}`} 
                           checked={selectedCategories.includes(cat.name)}
                           onCheckedChange={() => toggleCategory(cat.name)}
                           className="z-10 translate-y-0.5"
+                          aria-label={`Select ${cat.name}`}
                         />
                         <AccordionTrigger className="flex-1 hover:no-underline py-3">
                           <span className="text-sm font-bold text-left">{cat.name}</span>
@@ -306,12 +338,13 @@ export default function JobsPage() {
                       </div>
                       <AccordionContent>
                         <div className="space-y-3 pl-6 pt-2 pb-2">
-                          {cat.subcategories.map(sub => (
+                          {cat.subcategories.map((sub: string) => (
                             <div key={sub} className="flex items-center gap-2">
                               <Checkbox 
                                 id={`sub-${sub}`}
                                 checked={selectedSubcategories.includes(sub)}
                                 onCheckedChange={() => toggleSubcategory(sub)}
+                                aria-label={`Select ${sub}`}
                               />
                               <Label htmlFor={`sub-${sub}`} className="text-xs text-muted-foreground cursor-pointer hover:text-white transition-colors">
                                 {sub}
@@ -331,6 +364,7 @@ export default function JobsPage() {
                   <span className="text-xs font-black text-primary">${salaryRange[0].toLocaleString()}+</span>
                 </div>
                 <Slider 
+                  aria-label="Minimum stipend range"
                   max={10000} 
                   step={500}
                   value={salaryRange}
@@ -446,7 +480,6 @@ export default function JobsPage() {
                             <>
                               <DollarSign className="w-3.5 h-3.5" />
                               <span className="text-lg">{Number(job.stipend).toLocaleString()}</span>
-                              {job.rateType && <span className="text-[10px] text-muted-foreground">/{job.rateType}</span>}
                             </>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">Competitive</span>
