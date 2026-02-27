@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,6 +16,7 @@ import { SignUpForm } from '@/components/auth/SignUpForm';
 
 export default function AuthPage() {
   const auth = useAuth();
+  const db = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -32,14 +33,14 @@ export default function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (user && !isUserLoading) {
+    if (user && !isUserLoading && !isLoading) {
       router.push('/dashboard');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, isLoading, router]);
 
   const handleGoogleAuth = async () => {
-    // 1. Strict early return if already loading or missing auth
-    if (!auth || isLoading) return; 
+    // 1. Strict early return if already loading or missing auth/db
+    if (!auth || !db || isLoading) return; 
     
     setIsLoading(true);
 
@@ -117,7 +118,7 @@ export default function AuthPage() {
               <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
                 <Briefcase className="w-6 h-6 text-primary-foreground" />
               </div>
-              <CardTitle className="text-3xl font-black tracking-tight">Konnex</CardTitle>
+              <CardTitle className="text-3xl font-black tracking-tight text-white">Konnex</CardTitle>
               <CardDescription className="text-muted-foreground font-medium">Connecting ambition with innovation.</CardDescription>
             </CardHeader>
             
