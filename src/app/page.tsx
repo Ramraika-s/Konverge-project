@@ -1,9 +1,25 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Briefcase, GraduationCap, Building2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Home() {
+  const [displayText, setDisplayText] = useState('');
+  const fullText = "We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for job seekers.";
+  
+  useEffect(() => {
+    let i = 0;
+    const timer = setInterval(() => {
+      setDisplayText(fullText.slice(0, i));
+      i++;
+      if (i > fullText.length) clearInterval(timer);
+    }, 30);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="flex flex-col gap-24 pb-24">
       {/* Hero Section */}
@@ -29,8 +45,9 @@ export default function Home() {
             <span>Stop Hunting Opportunities.</span>
             <span className="italic gold-glow text-primary">Start Discovering Them.</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for students.
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed min-h-[3.5em]">
+            {displayText}
+            <span className="animate-pulse border-r-2 border-primary ml-1"></span>
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/jobs">
@@ -64,7 +81,9 @@ export default function Home() {
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Application tracking dashboard</li>
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Personalised role matching</li>
               </ul>
-              <Button variant="secondary" className="w-full sm:w-auto">Start Your Career</Button>
+              <Link href="/auth">
+                <Button variant="secondary" className="w-full sm:w-auto">Start Your Career</Button>
+              </Link>
             </div>
           </div>
 
@@ -82,7 +101,9 @@ export default function Home() {
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Applicant management system</li>
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Collaborative hiring tools</li>
               </ul>
-              <Button variant="secondary" className="w-full sm:w-auto">Post a Vacancy</Button>
+              <Link href="/auth">
+                <Button variant="secondary" className="w-full sm:w-auto">Post a Vacancy</Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -94,7 +115,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { label: 'Active Jobs', value: '2,500+' },
-              { label: 'Talented Students', value: '50k+' },
+              { label: 'Talented Seekers', value: '50k+' },
               { label: 'Hiring Partners', value: '450+' },
               { label: 'Success Rate', value: '94%' },
             ].map((stat) => (
