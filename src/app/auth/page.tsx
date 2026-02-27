@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -22,7 +23,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AuthPage() {
-  const { auth } = useAuth();
+  const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -71,6 +72,7 @@ export default function AuthPage() {
       if (err.code === 'auth/wrong-password') message = 'Incorrect password.';
       if (err.code === 'auth/email-already-in-use') message = 'This email is already registered.';
       if (err.code === 'auth/weak-password') message = 'Password should be at least 6 characters.';
+      if (err.code === 'auth/invalid-email') message = 'Invalid email address.';
       
       setError(message);
       setIsLoading(false);
@@ -101,8 +103,9 @@ export default function AuthPage() {
       setError('Please enter your email address first.');
       return;
     }
+    if (!auth) return;
     try {
-      await sendPasswordResetEmail(auth!, email);
+      await sendPasswordResetEmail(auth, email);
       toast({
         title: "Reset link sent",
         description: "Check your email for instructions.",

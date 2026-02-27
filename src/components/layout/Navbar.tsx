@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -18,7 +19,7 @@ import { signOut } from 'firebase/auth';
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { auth } = useAuth();
+  const auth = useAuth();
   const { user, isUserLoading } = useUser();
   
   const navLinks = [
