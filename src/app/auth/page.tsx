@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth, useUser, useFirestore } from '@/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/card';
 import { Briefcase, ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -32,6 +32,34 @@ export default function AuthPage() {
     }
   }, []);
 
+  // Handle the result of the Google Redirect
+  useEffect(() => {
+    const checkRedirectResult = async () => {
+      if (!auth) return;
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          toast({
+            title: "Signed in with Google",
+            description: "Successfully authenticated.",
+          });
+          router.push('/dashboard');
+        }
+      } catch (err: any) {
+        // Only show error if it's not the initial load or a known non-error state
+        if (err.code !== 'auth/no-auth-event') {
+          toast({
+            variant: "destructive",
+            title: "Google Auth Failed",
+            description: err.message || 'An error occurred during Google authentication.',
+          });
+        }
+      }
+    };
+
+    checkRedirectResult();
+  }, [auth, router, toast]);
+
   useEffect(() => {
     if (user && !isUserLoading && !isLoading) {
       router.push('/dashboard');
@@ -39,39 +67,23 @@ export default function AuthPage() {
   }, [user, isUserLoading, isLoading, router]);
 
   const handleGoogleAuth = async () => {
-    // 1. Strict early return if already loading or missing auth/db
-    if (!auth || !db || isLoading) return; 
+    if (!auth || isLoading) return; 
     
     setIsLoading(true);
 
     try {
       const provider = new GoogleAuthProvider();
-      // 2. Force the provider to select an account to prevent silent failures
       provider.setCustomParameters({
         prompt: 'select_account' 
       });
 
-      const result = await signInWithPopup(auth, provider);
-      
-      // 3. Ensure we actually got a user back before celebrating
-      if (result.user) {
-        toast({
-          title: "Signed in with Google",
-          description: "Successfully authenticated.",
-        });
-        router.push('/dashboard');
-      }
+      // Navigate away to Google's sign-in page
+      await signInWithRedirect(auth, provider);
     } catch (err: any) {
-      // 4. Safely handle the specific "closed by user" error to avoid ugly UI
-      if (err.code === 'auth/popup-closed-by-user') {
-         setIsLoading(false); // Just reset state, don't show a massive error
-         return; 
-      }
-
       toast({
         variant: "destructive",
         title: "Google Auth Failed",
-        description: err.message || 'An error occurred during Google authentication.',
+        description: err.message || 'An error occurred initiating Google authentication.',
       });
       setIsLoading(false);
     }
@@ -166,7 +178,7 @@ export default function AuthPage() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  Sign in with Google
+                  {isLoading ? 'Redirecting...' : 'Sign in with Google'}
                 </Button>
               </div>
             </CardFooter>
