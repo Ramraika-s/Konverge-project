@@ -62,7 +62,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-24 pb-24">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] py-24 md:py-32 flex items-center justify-center border-b border-white/5">
+      <section className="relative min-h-[90vh] py-24 md:py-32 flex items-center justify-center">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
             src="https://picsum.photos/seed/nexus-hero/1920/1080"
