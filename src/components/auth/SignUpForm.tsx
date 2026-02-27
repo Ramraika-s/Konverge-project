@@ -94,7 +94,8 @@ export function SignUpForm() {
         updatedAt: new Date().toISOString(),
       } : {
         id: result.user.uid,
-        firstName,        lastName,
+        firstName,
+        lastName,
         email: result.user.email,
         contactNumber,
         educationSummary,
