@@ -71,7 +71,7 @@
 }
 
 .gold-glow {
-  text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+  text-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
 }
 
 .gold-border-glow:focus {
@@ -86,6 +86,7 @@
 .gold-shine-hover {
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease-in-out !important;
 }
 
 .gold-shine-hover::after {
@@ -98,7 +99,7 @@
   background: linear-gradient(
     to right,
     transparent,
-    rgba(234, 179, 8, 0.4),
+    rgba(234, 179, 8, 0.5),
     transparent
   );
   transform: skewX(-25deg);
@@ -107,4 +108,10 @@
 
 .gold-shine-hover:hover::after {
   animation: shine-sweep 0.7s ease-in-out;
+}
+
+.gold-shine-hover:hover {
+  border-color: rgba(234, 179, 8, 0.5) !important;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.15) !important;
+  color: rgba(234, 179, 8, 1) !important;
 }

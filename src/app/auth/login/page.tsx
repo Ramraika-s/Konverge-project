@@ -50,7 +50,7 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="h-11 border-white/10 hover:bg-white/5 relative overflow-hidden gold-shine-hover">Google</Button>
+              <Button variant="outline" className="h-11 border-white/10 hover:bg-transparent relative overflow-hidden gold-shine-hover transition-all">Google</Button>
               <Button variant="outline" className="h-11 border-white/10 hover:bg-white/5">LinkedIn</Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mt-4">
