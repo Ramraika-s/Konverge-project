@@ -132,7 +132,7 @@ export function SignUpForm() {
       )}
 
       <ScrollArea className="flex-grow max-h-[480px] w-full rounded-md pr-4">
-        <div className="space-y-8 pb-10 px-1">
+        <div className="space-y-8 pb-24 px-1">
           <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all mx-1">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold flex items-center gap-2">
@@ -271,4 +271,3 @@ export function SignUpForm() {
     </form>
   );
 }
-
