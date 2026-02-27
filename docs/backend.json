@@ -1,0 +1,379 @@
+{
+  "entities": {
+    "StudentProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudentProfile",
+      "type": "object",
+      "description": "Represents a student user's profile information, excluding authentication credentials, which are handled externally.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudentProfile entity. This is expected to align with the external authentication system's user ID."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the student."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the student."
+        },
+        "email": {
+          "type": "string",
+          "description": "The primary email address of the student.",
+          "format": "email"
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "The contact phone number of the student."
+        },
+        "educationSummary": {
+          "type": "string",
+          "description": "A summary of the student's educational background."
+        },
+        "skills": {
+          "type": "array",
+          "description": "A list of skills possessed by the student.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resumeUrl": {
+          "type": "string",
+          "description": "A URL pointing to the student's resume.",
+          "format": "uri"
+        },
+        "portfolioUrl": {
+          "type": "string",
+          "description": "An optional URL pointing to the student's professional portfolio.",
+          "format": "uri"
+        },
+        "preferredRoles": {
+          "type": "array",
+          "description": "A list of job roles the student is interested in.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preferredLocations": {
+          "type": "array",
+          "description": "A list of preferred job locations for the student.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isRemotePreferred": {
+          "type": "boolean",
+          "description": "Indicates if the student prefers remote work opportunities."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the student profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the student profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "contactNumber",
+        "educationSummary",
+        "skills",
+        "resumeUrl",
+        "preferredRoles",
+        "preferredLocations",
+        "isRemotePreferred",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "EmployerProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmployerProfile",
+      "type": "object",
+      "description": "Represents an employer's company profile information, excluding authentication credentials, which are handled externally.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the EmployerProfile entity. This is expected to align with the external authentication system's user ID."
+        },
+        "companyName": {
+          "type": "string",
+          "description": "The legal name of the company."
+        },
+        "companyWebsite": {
+          "type": "string",
+          "description": "The official website URL of the company.",
+          "format": "uri"
+        },
+        "companyDescription": {
+          "type": "string",
+          "description": "A brief description of the company and its activities."
+        },
+        "contactPersonName": {
+          "type": "string",
+          "description": "The name of the primary contact person for the company."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The primary email address for company communications.",
+          "format": "email"
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "The primary contact phone number for the company."
+        },
+        "companyLocation": {
+          "type": "string",
+          "description": "The main operational location of the company (e.g., city, state, country)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the employer profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the employer profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "companyName",
+        "companyWebsite",
+        "companyDescription",
+        "contactPersonName",
+        "contactEmail",
+        "contactNumber",
+        "companyLocation",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "JobListing": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "JobListing",
+      "type": "object",
+      "description": "Represents a job opportunity posted by an employer.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the JobListing entity."
+        },
+        "employerId": {
+          "type": "string",
+          "description": "Reference to EmployerProfile. (Relationship: EmployerProfile 1:N JobListing)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the job position."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the job responsibilities and requirements."
+        },
+        "location": {
+          "type": "string",
+          "description": "The physical location of the job (e.g., 'New York, NY', 'Remote', 'Hybrid')."
+        },
+        "jobType": {
+          "type": "string",
+          "description": "The type of employment (e.g., 'Full-time', 'Part-time', 'Internship', 'Contract')."
+        },
+        "stipendMin": {
+          "type": "number",
+          "description": "The minimum stipend or salary offered for the position. Optional."
+        },
+        "stipendMax": {
+          "type": "number",
+          "description": "The maximum stipend or salary offered for the position. Optional."
+        },
+        "stipendCurrency": {
+          "type": "string",
+          "description": "The currency for the stipend/salary (e.g., 'USD', 'EUR')."
+        },
+        "applicationDeadline": {
+          "type": "string",
+          "description": "The deadline for submitting applications for this job.",
+          "format": "date-time"
+        },
+        "remoteOption": {
+          "type": "boolean",
+          "description": "Indicates if remote work is an option for this job."
+        },
+        "skillsRequired": {
+          "type": "array",
+          "description": "A list of skills required for this job position.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "postedAt": {
+          "type": "string",
+          "description": "Timestamp when the job listing was first posted.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the job listing was last updated.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the job listing (e.g., 'Active', 'Closed', 'Draft', 'Archived')."
+        }
+      },
+      "required": [
+        "id",
+        "employerId",
+        "title",
+        "description",
+        "location",
+        "jobType",
+        "applicationDeadline",
+        "remoteOption",
+        "skillsRequired",
+        "postedAt",
+        "updatedAt",
+        "status"
+      ]
+    },
+    "Application": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Application",
+      "type": "object",
+      "description": "Represents a student's application to a specific job listing.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Application entity."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Reference to StudentProfile. (Relationship: StudentProfile 1:N Application)"
+        },
+        "jobListingId": {
+          "type": "string",
+          "description": "Reference to JobListing. (Relationship: JobListing 1:N Application)"
+        },
+        "applicationDate": {
+          "type": "string",
+          "description": "Timestamp when the application was submitted.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the application (e.g., 'Applied', 'Under Review', 'Interview Scheduled', 'Offer Extended', 'Accepted', 'Rejected')."
+        },
+        "coverLetterText": {
+          "type": "string",
+          "description": "The text content of the cover letter submitted with the application. Optional."
+        },
+        "attachedResumeUrl": {
+          "type": "string",
+          "description": "An optional URL pointing to a specific resume version attached to this application.",
+          "format": "uri"
+        },
+        "feedback": {
+          "type": "string",
+          "description": "Optional feedback provided by the employer regarding the application."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the application status or details were last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "jobListingId",
+        "applicationDate",
+        "status",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/studentProfiles/{studentId}",
+        "definition": {
+          "entityName": "StudentProfile",
+          "schema": {
+            "$ref": "#/backend/entities/StudentProfile"
+          },
+          "description": "Stores individual student profiles. Each document's ID (`studentId`) is the Firebase Authentication UID of the student. Access is restricted to the owner (`request.auth.uid == studentId`).",
+          "params": [
+            {
+              "name": "studentId",
+              "description": "The unique identifier of the student, matching their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/employerProfiles/{employerId}",
+        "definition": {
+          "entityName": "EmployerProfile",
+          "schema": {
+            "$ref": "#/backend/entities/EmployerProfile"
+          },
+          "description": "Stores individual employer profiles. Each document's ID (`employerId`) is the Firebase Authentication UID of the employer. Access is restricted to the owner (`request.auth.uid == employerId`).",
+          "params": [
+            {
+              "name": "employerId",
+              "description": "The unique identifier of the employer, matching their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/jobListings/{jobListingId}",
+        "definition": {
+          "entityName": "JobListing",
+          "schema": {
+            "$ref": "#/backend/entities/JobListing"
+          },
+          "description": "Contains job opportunities posted by employers. Each document includes an 'employerId' field that references the owner (the employer who posted it). This 'employerId' is denormalized within the document to enable authorization independence. All authenticated users can read listings, but only the owning employer can create, update, or delete their specific listing.",
+          "params": [
+            {
+              "name": "jobListingId",
+              "description": "The unique identifier for the job listing."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/applications/{applicationId}",
+        "definition": {
+          "entityName": "Application",
+          "schema": {
+            "$ref": "#/backend/entities/Application"
+          },
+          "description": "Stores student applications to job listings. Each document includes 'studentId' (the applicant) and 'employerId' (denormalized from the JobListing owner). Both 'studentId' and 'employerId' are denormalized within the document to ensure authorization independence for both parties. Access is granted to either the student who submitted the application or the employer who owns the job listing.",
+          "params": [
+            {
+              "name": "applicationId",
+              "description": "The unique identifier for the application."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for NexusHire is designed to be secure, scalable, and debuggable, strictly adhering to the core design principles. \n\n**1. Authorization Independence:**\n*   **Student and Employer Profiles:** `studentProfiles/{studentId}` and `employerProfiles/{employerId}` achieve authorization independence through path-based ownership. The `studentId` or `employerId` in the path segment directly corresponds to the authenticated user's `uid` (`request.auth.uid`), eliminating the need for any `get()` operations in security rules to determine ownership.\n*   **Job Listings:** `jobListings/{jobListingId}` documents include an `employerId` field. This field explicitly denotes the owner of the job listing. Authorization rules for read/write/update operations on a job listing can directly compare `resource.data.employerId` with `request.auth.uid`, thus avoiding `get()` calls to a parent `employerProfiles` document.\n*   **Applications:** `applications/{applicationId}` documents are critical for multi-party access. To ensure full authorization independence for both the student (who applied) and the employer (who posted the job), each `Application` document **denormalizes** the `employerId` (sourced from the `JobListing`) in addition to its `studentId`. This allows security rules to evaluate access for an `Application` by checking `request.auth.uid == resource.data.studentId` or `request.auth.uid == resource.data.employerId` without making any `get()` calls. For `create` operations, the client or a secure Cloud Function is responsible for populating the correct `employerId` and `studentId`, allowing the rule to simply validate `request.auth.uid == request.resource.data.studentId`, further maintaining independence.\n\n**2. QAPs (Rules are not Filters):**\n*   **Profile Collections (`studentProfiles`, `employerProfiles`):** These collections store individual user profiles. Access is strictly tied to the authenticated user's `uid`, meaning users only access their own profile document. `list` operations are effectively point reads or irrelevant for a single document.\n*   **Job Listings (`jobListings`):** This collection is designed for efficient `list` operations. All authenticated users (both students and employers) are allowed to read documents in this collection, facilitating job search. Employers can `list` their *own* job listings by querying `jobListings.where('employerId', '==', request.auth.uid)`. The security rules will permit these queries because the `employerId` is an indexed field in the document, and the `read` permission is broadly granted to authenticated users.\n*   **Applications (`applications`):** This collection supports `list` operations for two distinct user types. Students can `list` *their own* applications using `applications.where('studentId', '==', request.auth.uid)`. Employers can `list` applications submitted to *their* job listings using `applications.where('employerId', '==', request.auth.uid)`. The denormalization of `studentId` and `employerId` into each `Application` document is crucial for enabling these efficient and secure `list` queries without filtering by rules, thereby fully supporting the QAPs principle.\n\n**3. Structural Segregation:** Each collection (`studentProfiles`, `employerProfiles`, `jobListings`, `applications`) is designed to hold documents with a homogeneous security posture. For example, all `JobListing` documents are publicly readable by authenticated users but only writable by their `employerId`, preventing mixed-access data within the same collection.\n\n**4. DBAC (No Custom Claims):** User roles (Student, Employer) are implicitly derived from the existence of their respective profile documents. A user is considered a 'Student' if a document exists at `/studentProfiles/{request.auth.uid}` and an 'Employer' if a document exists at `/employerProfiles/{request.auth.uid}`. This approach avoids custom claims and relies solely on database state, simplifying rule logic. \n\n**5. Data Clarity and Predictability:** The schema for each entity includes explicit `status` fields (e.g., `JobListing.status`, `Application.status`) to manage document state, ensuring clear and predictable data modeling. Standardized field names like `studentId`, `employerId`, and descriptive wildcards (`{studentId}`, `{jobListingId}`) enhance readability and maintainability of the security rules and overall codebase."
+  }
+}
