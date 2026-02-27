@@ -1,8 +1,9 @@
 export const firebaseConfig = {
-  "projectId": "studio-1238411663-899f8",
-  "appId": "1:434358088386:web:f19c8b98c0fe25d33a015b",
-  "apiKey": "AIzaSyDhAUsXHBpAkLFmU3fAF5cdVQbrYg_FLx4",
-  "authDomain": "studio-1238411663-899f8.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "434358088386"
+  apiKey: "AIzaSyBGLDlHjMvrC8Pk5_-SYzUC8pEP52MrTVc",
+  authDomain: "nexushire-3cb62.firebaseapp.com",
+  projectId: "nexushire-3cb62",
+  storageBucket: "nexushire-3cb62.firebasestorage.app",
+  messagingSenderId: "961668419814",
+  appId: "1:961668419814:web:81048b532ffe58cdbdab27",
+  measurementId: "G-HM3Z4YWNBT"
 };

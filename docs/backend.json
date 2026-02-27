@@ -304,7 +304,7 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "google.com"
     ]
   },
   "firestore": {
@@ -348,7 +348,7 @@
           "schema": {
             "$ref": "#/backend/entities/JobListing"
           },
-          "description": "Contains job opportunities posted by employers. Each document includes an 'employerId' field that references the owner (the employer who posted it). This 'employerId' is denormalized within the document to enable authorization independence. All authenticated users can read listings, but only the owning employer can create, update, or delete their specific listing.",
+          "description": "Contains job opportunities posted by employers. Each document includes an 'employerId' field that references the owner (the employer who posted it). All authenticated users can read listings, but only the owning employer can create, update, or delete their specific listing.",
           "params": [
             {
               "name": "jobListingId",
@@ -364,7 +364,7 @@
           "schema": {
             "$ref": "#/backend/entities/Application"
           },
-          "description": "Stores student applications to job listings. Each document includes 'studentId' (the applicant) and 'employerId' (denormalized from the JobListing owner). Both 'studentId' and 'employerId' are denormalized within the document to ensure authorization independence for both parties. Access is granted to either the student who submitted the application or the employer who owns the job listing.",
+          "description": "Stores student applications to job listings. Access is granted to either the student who submitted the application or the employer who owns the job listing.",
           "params": [
             {
               "name": "applicationId",
@@ -374,6 +374,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure for NexusHire is designed to be secure, scalable, and debuggable, strictly adhering to the core design principles. \n\n**1. Authorization Independence:**\n*   **Student and Employer Profiles:** `studentProfiles/{studentId}` and `employerProfiles/{employerId}` achieve authorization independence through path-based ownership. The `studentId` or `employerId` in the path segment directly corresponds to the authenticated user's `uid` (`request.auth.uid`), eliminating the need for any `get()` operations in security rules to determine ownership.\n*   **Job Listings:** `jobListings/{jobListingId}` documents include an `employerId` field. This field explicitly denotes the owner of the job listing. Authorization rules for read/write/update operations on a job listing can directly compare `resource.data.employerId` with `request.auth.uid`, thus avoiding `get()` calls to a parent `employerProfiles` document.\n*   **Applications:** `applications/{applicationId}` documents are critical for multi-party access. To ensure full authorization independence for both the student (who applied) and the employer (who posted the job), each `Application` document **denormalizes** the `employerId` (sourced from the `JobListing`) in addition to its `studentId`. This allows security rules to evaluate access for an `Application` by checking `request.auth.uid == resource.data.studentId` or `request.auth.uid == resource.data.employerId` without making any `get()` calls. For `create` operations, the client or a secure Cloud Function is responsible for populating the correct `employerId` and `studentId`, allowing the rule to simply validate `request.auth.uid == request.resource.data.studentId`, further maintaining independence.\n\n**2. QAPs (Rules are not Filters):**\n*   **Profile Collections (`studentProfiles`, `employerProfiles`):** These collections store individual user profiles. Access is strictly tied to the authenticated user's `uid`, meaning users only access their own profile document. `list` operations are effectively point reads or irrelevant for a single document.\n*   **Job Listings (`jobListings`):** This collection is designed for efficient `list` operations. All authenticated users (both students and employers) are allowed to read documents in this collection, facilitating job search. Employers can `list` their *own* job listings by querying `jobListings.where('employerId', '==', request.auth.uid)`. The security rules will permit these queries because the `employerId` is an indexed field in the document, and the `read` permission is broadly granted to authenticated users.\n*   **Applications (`applications`):** This collection supports `list` operations for two distinct user types. Students can `list` *their own* applications using `applications.where('studentId', '==', request.auth.uid)`. Employers can `list` applications submitted to *their* job listings using `applications.where('employerId', '==', request.auth.uid)`. The denormalization of `studentId` and `employerId` into each `Application` document is crucial for enabling these efficient and secure `list` queries without filtering by rules, thereby fully supporting the QAPs principle.\n\n**3. Structural Segregation:** Each collection (`studentProfiles`, `employerProfiles`, `jobListings`, `applications`) is designed to hold documents with a homogeneous security posture. For example, all `JobListing` documents are publicly readable by authenticated users but only writable by their `employerId`, preventing mixed-access data within the same collection.\n\n**4. DBAC (No Custom Claims):** User roles (Student, Employer) are implicitly derived from the existence of their respective profile documents. A user is considered a 'Student' if a document exists at `/studentProfiles/{request.auth.uid}` and an 'Employer' if a document exists at `/employerProfiles/{request.auth.uid}`. This approach avoids custom claims and relies solely on database state, simplifying rule logic. \n\n**5. Data Clarity and Predictability:** The schema for each entity includes explicit `status` fields (e.g., `JobListing.status`, `Application.status`) to manage document state, ensuring clear and predictable data modeling. Standardized field names like `studentId`, `employerId`, and descriptive wildcards (`{studentId}`, `{jobListingId}`) enhance readability and maintainability of the security rules and overall codebase."
+    "reasoning": "Standard Firestore structure for NexusHire."
   }
 }
