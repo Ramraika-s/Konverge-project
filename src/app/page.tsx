@@ -77,9 +77,18 @@ export default function Home() {
                 Build your professional identity, showcase your skills, and get discovered by companies that value potential and innovation.
               </p>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Verified listings only</li>
-                <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Application tracking dashboard</li>
-                <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Personalised role matching</li>
+                <li className="flex items-center gap-3 text-sm">
+                  <ShieldCheck className="w-4 h-4 text-primary" /> 
+                  Opportunities gathered beyond traditional job boards
+                </li>
+                <li className="flex items-center gap-3 text-sm">
+                  <ShieldCheck className="w-4 h-4 text-primary" /> 
+                  Clean, structured listings with verified sources
+                </li>
+                <li className="flex items-center gap-3 text-sm">
+                  <ShieldCheck className="w-4 h-4 text-primary" /> 
+                  Personalized discovery with deadline & stipend insights
+                </li>
               </ul>
               <Link href="/auth">
                 <Button variant="secondary" className="w-full sm:w-auto">Start Your Career</Button>
@@ -94,7 +103,7 @@ export default function Home() {
             <div>
               <h2 className="text-3xl font-bold mb-4">For Employers</h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Streamline your hiring process with advanced management tools and reach a curated pool of talented students ready to make an impact.
+                Streamline your hiring process with advanced management tools and reach a curated pool of talented job seekers ready to make an impact.
               </p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Seamless job posting</li>
