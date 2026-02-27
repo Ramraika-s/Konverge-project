@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -12,6 +12,8 @@ import {
   signInWithPopup,
   sendPasswordResetEmail
 } from 'firebase/auth';
+import { doc, serverTimestamp } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function AuthPage() {
   const auth = useAuth();
+  const db = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -52,7 +55,7 @@ export default function AuthPage() {
   }, [user, isUserLoading, router]);
 
   const handleEmailAuth = async (type: 'login' | 'signup') => {
-    if (!auth) return;
+    if (!auth || !db) return;
     if (!email || !password) {
       setError('Please fill in all fields.');
       return;
@@ -69,7 +72,39 @@ export default function AuthPage() {
           description: "Successfully signed in.",
         });
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Create Initial Profile Document based on backend.json entities
+        const profileRef = doc(db, isEmployer ? 'employerProfiles' : 'studentProfiles', result.user.uid);
+        const profileData = isEmployer ? {
+          id: result.user.uid,
+          companyName: email.split('@')[0], // Placeholder
+          companyWebsite: "https://example.com",
+          companyDescription: "Leading innovation in the industry.",
+          contactPersonName: result.user.displayName || "Company Representative",
+          contactEmail: result.user.email,
+          contactNumber: "000-000-0000",
+          companyLocation: "Remote",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        } : {
+          id: result.user.uid,
+          firstName: "New",
+          lastName: "User",
+          email: result.user.email,
+          contactNumber: "000-000-0000",
+          educationSummary: "Currently seeking opportunities.",
+          skills: [],
+          resumeUrl: "",
+          preferredRoles: [],
+          preferredLocations: [],
+          isRemotePreferred: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+
+        setDocumentNonBlocking(profileRef, profileData, { merge: true });
+
         toast({
           title: "Account created!",
           description: `Welcome to Konnex as a ${isEmployer ? 'Employer' : 'Job-Seeker'}.`,

@@ -19,7 +19,7 @@ import {
   SearchCode,
   Globe,
   Navigation,
-  Building2
+  Loader2
 } from 'lucide-react';
 import { 
   Card, 
@@ -41,110 +41,23 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 
 // Expanded Professional Categories
 const ROLE_CATEGORIES = [
-  {
-    id: 'eng',
-    name: 'Engineering & Tech',
-    subcategories: ['Frontend', 'Backend', 'Fullstack', 'DevOps', 'Mobile', 'Data Science', 'AI/ML', 'Cybersecurity']
-  },
-  {
-    id: 'fin',
-    name: 'Finance & Accounting',
-    subcategories: ['Investment Banking', 'Corporate Finance', 'Audit', 'Tax', 'Wealth Management', 'FinTech']
-  },
-  {
-    id: 'biz',
-    name: 'Business & Operations',
-    subcategories: ['Strategy', 'Project Management', 'Operations', 'Supply Chain', 'Logistics', 'Procurement']
-  },
-  {
-    id: 'mkt',
-    name: 'Marketing & PR',
-    subcategories: ['Brand Management', 'Digital Marketing', 'Content Strategy', 'SEO', 'Market Research', 'Public Relations']
-  },
-  {
-    id: 'des',
-    name: 'Design & Creative',
-    subcategories: ['UI/UX', 'Product Design', 'Graphic Design', 'Motion Graphics', 'User Research', 'Architecture']
-  },
-  {
-    id: 'hr',
-    name: 'Human Resources',
-    subcategories: ['Talent Acquisition', 'L&D', 'Compensation & Benefits', 'Employee Relations', 'HR Analytics']
-  },
-  {
-    id: 'leg',
-    name: 'Legal & Compliance',
-    subcategories: ['Corporate Law', 'Intellectual Property', 'Compliance', 'Risk Management', 'Public Policy']
-  },
-  {
-    id: 'sales',
-    name: 'Sales & BD',
-    subcategories: ['Account Management', 'Enterprise Sales', 'Inside Sales', 'Business Development']
-  }
-];
-
-const MOCK_JOBS = [
-  {
-    id: '1',
-    title: 'Frontend Engineering Intern',
-    company: 'NexusTech',
-    location: 'Remote',
-    workMode: 'Remote',
-    type: 'Internship',
-    duration: '6 Months',
-    stipend: '3000',
-    currency: 'USD',
-    postedAt: '2 days ago',
-    description: 'Work with Next.js and Tailwind CSS on enterprise-grade applications.',
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    isVerified: true,
-    applicants: 48,
-    category: 'Engineering & Tech',
-    logoSeed: 'nexustech-logo'
-  },
-  {
-    id: '2',
-    title: 'Financial Analyst',
-    company: 'Global Capital',
-    location: 'New York, NY',
-    workMode: 'On-site',
-    type: 'Full-time',
-    duration: 'Full-time',
-    stipend: '6500',
-    currency: 'USD',
-    postedAt: '1 day ago',
-    description: 'Manage corporate investment portfolios and perform market risk analysis.',
-    tags: ['Excel', 'Risk Analysis', 'Bloomberg'],
-    isVerified: true,
-    applicants: 22,
-    category: 'Finance & Accounting',
-    logoSeed: 'finguard-logo'
-  },
-  {
-    id: '3',
-    title: 'Product Design Intern',
-    company: 'CreativeFlow',
-    location: 'San Francisco, CA',
-    workMode: 'On-site',
-    type: 'Internship',
-    duration: '3 Months',
-    stipend: '4500',
-    currency: 'USD',
-    postedAt: '5 hours ago',
-    description: 'Help us craft the future of creative tools for professional artists.',
-    tags: ['Figma', 'UI/UX', 'Prototyping'],
-    isVerified: true,
-    applicants: 12,
-    category: 'Design & Creative',
-    logoSeed: 'creativeflow-logo'
-  }
+  { id: 'eng', name: 'Engineering & Tech', subcategories: ['Frontend', 'Backend', 'Fullstack', 'DevOps', 'Mobile', 'Data Science', 'AI/ML', 'Cybersecurity'] },
+  { id: 'fin', name: 'Finance & Accounting', subcategories: ['Investment Banking', 'Corporate Finance', 'Audit', 'Tax', 'Wealth Management', 'FinTech'] },
+  { id: 'biz', name: 'Business & Operations', subcategories: ['Strategy', 'Project Management', 'Operations', 'Supply Chain', 'Logistics', 'Procurement'] },
+  { id: 'mkt', name: 'Marketing & PR', subcategories: ['Brand Management', 'Digital Marketing', 'Content Strategy', 'SEO', 'Market Research', 'Public Relations'] },
+  { id: 'des', name: 'Design & Creative', subcategories: ['UI/UX', 'Product Design', 'Graphic Design', 'Motion Graphics', 'User Research', 'Architecture'] },
+  { id: 'hr', name: 'Human Resources', subcategories: ['Talent Acquisition', 'L&D', 'Compensation & Benefits', 'Employee Relations', 'HR Analytics'] },
+  { id: 'leg', name: 'Legal & Compliance', subcategories: ['Corporate Law', 'Intellectual Property', 'Compliance', 'Risk Management', 'Public Policy'] },
+  { id: 'sales', name: 'Sales & BD', subcategories: ['Account Management', 'Enterprise Sales', 'Inside Sales', 'Business Development'] }
 ];
 
 export default function JobsPage() {
+  const db = useFirestore();
   const [searchQuery, setSearchQuery] = useState('');
   const [categorySearch, setCategorySearch] = useState('');
   const [selectedWorkMode, setSelectedWorkMode] = useState<string[]>([]);
@@ -154,21 +67,29 @@ export default function JobsPage() {
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
-  // Intelligent Category Filtering
+  // Firestore Query
+  const jobsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(
+      collection(db, 'jobListings'),
+      where('status', '==', 'Active'),
+      orderBy('postedAt', 'desc')
+    );
+  }, [db]);
+
+  const { data: jobs, isLoading: isJobsLoading } = useCollection(jobsQuery);
+
   const filteredCategories = useMemo(() => {
     if (!categorySearch) return ROLE_CATEGORIES;
     const lowerSearch = categorySearch.toLowerCase();
-    
     return ROLE_CATEGORIES.map(cat => {
       const isCategoryMatch = cat.name.toLowerCase().includes(lowerSearch);
       const matchedSubcategories = cat.subcategories.filter(sub => 
         sub.toLowerCase().includes(lowerSearch)
       );
-      
       if (isCategoryMatch || matchedSubcategories.length > 0) {
         return {
           ...cat,
-          // If searching, only show matched subcategories
           subcategories: isCategoryMatch ? cat.subcategories : matchedSubcategories,
           isExplicitMatch: true
         };
@@ -177,19 +98,18 @@ export default function JobsPage() {
     }).filter(Boolean) as any[];
   }, [categorySearch]);
 
-  // Handle auto-expansion of accordion items based on search results
-  useEffect(() => {
-    if (categorySearch) {
-      if (filteredCategories.length === 1) {
-        setOpenAccordions([filteredCategories[0].id]);
-      } else {
-        // If searching and multiple results, we keep them collapsed or allow user to toggle
-        // But we want to ensure any subcategory match makes the category potentially relevant
-      }
-    } else {
-      setOpenAccordions([]);
-    }
-  }, [filteredCategories, categorySearch]);
+  const filteredJobs = useMemo(() => {
+    if (!jobs) return [];
+    return jobs.filter(job => {
+      const matchesSearch = job.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          job.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesWorkMode = selectedWorkMode.length === 0 || selectedWorkMode.includes(job.jobType) || (selectedWorkMode.includes('Remote') && job.remoteOption);
+      const matchesSalary = job.stipendMax >= salaryRange[0];
+      const matchesLocation = !locationQuery || job.location?.toLowerCase().includes(locationQuery.toLowerCase());
+      
+      return matchesSearch && matchesWorkMode && matchesSalary && matchesLocation;
+    });
+  }, [jobs, searchQuery, selectedWorkMode, salaryRange, locationQuery]);
 
   const showLocationSearch = selectedWorkMode.includes('On-site') || selectedWorkMode.includes('Hybrid');
 
@@ -211,10 +131,6 @@ export default function JobsPage() {
     );
   };
 
-  const getLogo = (seedId: string) => {
-    return PlaceHolderImages.find(img => img.id === seedId)?.imageUrl || `https://picsum.photos/seed/${seedId}/100/100`;
-  };
-
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-10">
@@ -233,7 +149,6 @@ export default function JobsPage() {
               <div className="relative grow">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input 
-                  aria-label="Search jobs"
                   placeholder="Role title, skills, or keywords..." 
                   className="pl-12 h-14 bg-card/50 border-white/5 rounded-2xl focus:ring-primary/50 text-lg"
                   value={searchQuery}
@@ -245,7 +160,6 @@ export default function JobsPage() {
                 <div className="relative md:w-[250px] animate-in slide-in-from-left-2 duration-300">
                   <Navigation className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                   <Input 
-                    aria-label="Search location"
                     placeholder="City or Country..." 
                     className="pl-10 h-14 bg-card/50 border-white/5 rounded-2xl"
                     value={locationQuery}
@@ -259,7 +173,7 @@ export default function JobsPage() {
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-3" role="group" aria-label="Work mode filters">
+            <div className="flex flex-wrap gap-3">
               {['Remote', 'On-site', 'Hybrid'].map(mode => (
                 <Badge 
                   key={mode}
@@ -268,8 +182,6 @@ export default function JobsPage() {
                     selectedWorkMode.includes(mode) ? 'bg-primary text-primary-foreground' : 'hover:bg-white/5'
                   }`}
                   onClick={() => toggleWorkMode(mode)}
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && toggleWorkMode(mode)}
                 >
                   {mode === 'Remote' && <Globe className="w-3 h-3 mr-1.5" />}
                   {mode}
@@ -287,8 +199,7 @@ export default function JobsPage() {
                   <Filter className="w-4 h-4" /> Filters
                 </h3>
                 <Button 
-                  variant="ghost" 
-                  size="sm" 
+                  variant="ghost" size="sm" 
                   className="text-[10px] uppercase font-bold text-muted-foreground h-auto p-0 hover:bg-transparent" 
                   onClick={() => {
                     setSelectedWorkMode([]);
@@ -308,7 +219,6 @@ export default function JobsPage() {
                 <div className="relative">
                   <SearchCode className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input 
-                    aria-label="Search role categories"
                     placeholder="Search roles..." 
                     className="h-9 pl-9 text-xs bg-white/5 border-white/5 rounded-xl"
                     value={categorySearch}
@@ -316,12 +226,7 @@ export default function JobsPage() {
                   />
                 </div>
                 
-                <Accordion 
-                  type="multiple" 
-                  value={openAccordions} 
-                  onValueChange={setOpenAccordions}
-                  className="w-full"
-                >
+                <Accordion type="multiple" value={openAccordions} onValueChange={setOpenAccordions} className="w-full">
                   {filteredCategories.map((cat) => (
                     <AccordionItem key={cat.id} value={cat.id} className="border-white/5">
                       <div className="flex items-center gap-2 w-full pr-2">
@@ -330,7 +235,6 @@ export default function JobsPage() {
                           checked={selectedCategories.includes(cat.name)}
                           onCheckedChange={() => toggleCategory(cat.name)}
                           className="z-10 translate-y-0.5"
-                          aria-label={`Select ${cat.name}`}
                         />
                         <AccordionTrigger className="flex-1 hover:no-underline py-3">
                           <span className="text-sm font-bold text-left">{cat.name}</span>
@@ -344,7 +248,6 @@ export default function JobsPage() {
                                 id={`sub-${sub}`}
                                 checked={selectedSubcategories.includes(sub)}
                                 onCheckedChange={() => toggleSubcategory(sub)}
-                                aria-label={`Select ${sub}`}
                               />
                               <Label htmlFor={`sub-${sub}`} className="text-xs text-muted-foreground cursor-pointer hover:text-white transition-colors">
                                 {sub}
@@ -360,33 +263,16 @@ export default function JobsPage() {
 
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Min Stipend/Salary</Label>
+                  <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Min Stipend</Label>
                   <span className="text-xs font-black text-primary">${salaryRange[0].toLocaleString()}+</span>
                 </div>
                 <Slider 
-                  aria-label="Minimum stipend range"
                   max={10000} 
                   step={500}
                   value={salaryRange}
                   onValueChange={setSalaryRange}
                   className="py-4"
                 />
-                <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
-                  <span>$0</span>
-                  <span>$10k+</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Commitment</Label>
-                <div className="grid grid-cols-1 gap-3">
-                  {['Full-time', 'Part-time', 'Internship', 'Contract'].map(type => (
-                    <div key={type} className="flex items-center gap-2">
-                      <Checkbox id={`type-${type}`} className="border-white/20" />
-                      <Label htmlFor={`type-${type}`} className="text-xs font-bold cursor-pointer">{type}</Label>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </aside>
@@ -394,39 +280,21 @@ export default function JobsPage() {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-muted-foreground">
-                Displaying <span className="text-white font-black">{MOCK_JOBS.length}</span> curated opportunities
+                {isJobsLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                ) : (
+                  <>Displaying <span className="text-white font-black">{filteredJobs.length}</span> curated opportunities</>
+                )}
               </span>
-              <Select defaultValue="newest">
-                <SelectTrigger className="w-[160px] h-9 border-white/5 bg-transparent rounded-xl text-xs font-bold">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent className="glass-card">
-                  <SelectItem value="newest">Latest Posted</SelectItem>
-                  <SelectItem value="salary-high">Highest Stipend</SelectItem>
-                  <SelectItem value="applicants-low">Least Competitive</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="grid gap-6">
-              {MOCK_JOBS.map((job) => (
+              {filteredJobs.map((job) => (
                 <Card key={job.id} className="glass-card hover:border-primary/40 transition-all duration-500 group relative overflow-hidden rounded-4xl">
-                  {job.isVerified && (
-                    <div className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 bg-primary/10 rotate-45 flex items-end justify-center pb-2 pointer-events-none">
-                       <CheckCircle2 className="w-4 h-4 text-primary -rotate-45" />
-                    </div>
-                  )}
-
                   <CardHeader className="flex flex-col md:flex-row items-start justify-between gap-4 p-8">
                     <div className="flex gap-6">
                       <div className="w-16 h-16 rounded-2xl bg-secondary/80 flex items-center justify-center border border-white/10 overflow-hidden shadow-inner group-hover:scale-105 transition-transform duration-500">
-                        <Image 
-                          src={getLogo(job.logoSeed)}
-                          alt={job.company}
-                          width={64}
-                          height={64}
-                          className="object-cover"
-                        />
+                        <Briefcase className="w-8 h-8 text-muted-foreground" />
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -435,25 +303,14 @@ export default function JobsPage() {
                               {job.title}
                             </CardTitle>
                           </Link>
-                          {job.isVerified && (
-                            <Badge variant="outline" className="h-5 px-1.5 border-primary/20 text-primary bg-primary/5 text-[9px] font-black uppercase tracking-tighter">
-                              Verified
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className="h-5 px-1.5 border-primary/20 text-primary bg-primary/5 text-[9px] font-black uppercase tracking-tighter">
+                            {job.status}
+                          </Badge>
                         </div>
                         <CardDescription className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                          <span className="font-bold text-white/90 text-sm">{job.company}</span>
                           <span className="flex items-center gap-1.5 text-xs"><MapPin className="w-3.5 h-3.5 text-primary" /> {job.location}</span>
-                          <span className="flex items-center gap-1.5 text-xs"><Briefcase className="w-3.5 h-3.5 text-primary" /> {job.workMode}</span>
+                          <span className="flex items-center gap-1.5 text-xs"><Briefcase className="w-3.5 h-3.5 text-primary" /> {job.jobType}</span>
                         </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 shrink-0">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-black uppercase text-[10px] tracking-widest px-3 py-1">
-                        {job.type}
-                      </Badge>
-                      <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" /> {job.duration}
                       </div>
                     </div>
                   </CardHeader>
@@ -463,7 +320,7 @@ export default function JobsPage() {
                       {job.description}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {job.tags.map(tag => (
+                      {job.skillsRequired?.map((tag: string) => (
                         <Badge key={tag} variant="outline" className="text-[10px] bg-white/5 border-white/5 uppercase font-black text-muted-foreground tracking-widest px-3 py-1">
                           {tag}
                         </Badge>
@@ -476,30 +333,16 @@ export default function JobsPage() {
                       <div className="flex flex-col">
                         <span className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Est. Value</span>
                         <div className="flex items-center gap-1 font-black text-primary">
-                          {job.stipend ? (
-                            <>
-                              <DollarSign className="w-3.5 h-3.5" />
-                              <span className="text-lg">{Number(job.stipend).toLocaleString()}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">Competitive</span>
-                          )}
+                          <DollarSign className="w-3.5 h-3.5" />
+                          <span className="text-lg">{job.stipendMin?.toLocaleString()} - {job.stipendMax?.toLocaleString()}</span>
                         </div>
                       </div>
                       <div className="h-8 w-px bg-white/5 hidden sm:block" />
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Applicants</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Remote</span>
                         <div className="flex items-center gap-1.5 font-bold text-white">
-                          <Users className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-sm">{job.applicants || 0}</span>
-                        </div>
-                      </div>
-                      <div className="h-8 w-px bg-white/5 hidden sm:block" />
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Posted</span>
-                        <div className="flex items-center gap-1.5 font-bold text-muted-foreground">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span className="text-sm">{job.postedAt}</span>
+                          <Globe className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-sm">{job.remoteOption ? "Yes" : "No"}</span>
                         </div>
                       </div>
                     </div>
@@ -512,12 +355,6 @@ export default function JobsPage() {
                   </CardFooter>
                 </Card>
               ))}
-            </div>
-
-            <div className="pt-12 flex justify-center">
-              <Button variant="outline" className="border-white/10 text-muted-foreground font-bold hover:bg-white/5 px-12 h-12 rounded-2xl">
-                Discover More Opportunities
-              </Button>
             </div>
           </div>
         </div>

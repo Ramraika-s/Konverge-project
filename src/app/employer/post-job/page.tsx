@@ -14,7 +14,8 @@ import {
   DollarSign, 
   Info,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,9 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, serverTimestamp, doc } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const jobSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -57,6 +61,8 @@ type JobFormValues = z.infer<typeof jobSchema>;
 export default function PostJobPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useUser();
+  const db = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<JobFormValues>({
@@ -75,19 +81,51 @@ export default function PostJobPage() {
   });
 
   async function onSubmit(values: JobFormValues) {
+    if (!user || !db) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to post a job.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
     
-    console.log("Form Submitted:", values);
-    
-    toast({
-      title: "Job Published!",
-      description: "Your listing is now live for all job seekers to see.",
-    });
-    
-    setIsSubmitting(false);
-    router.push('/dashboard/employer');
+    try {
+      const jobListingsRef = collection(db, 'jobListings');
+      const skillsArray = values.skillsRequired.split(',').map(s => s.trim()).filter(s => s !== "");
+      
+      const newJobData = {
+        employerId: user.uid,
+        title: values.title,
+        description: values.description,
+        location: values.location,
+        jobType: values.jobType,
+        stipendMin: values.stipendMin ? parseFloat(values.stipendMin) : 0,
+        stipendMax: values.stipendMax ? parseFloat(values.stipendMax) : 0,
+        stipendCurrency: "USD",
+        applicationDeadline: values.applicationDeadline,
+        remoteOption: values.remoteOption,
+        skillsRequired: skillsArray,
+        postedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        status: "Active",
+      };
+
+      addDocumentNonBlocking(jobListingsRef, newJobData);
+      
+      toast({
+        title: "Job Published!",
+        description: "Your listing is now live for all job seekers to see.",
+      });
+      
+      router.push('/dashboard/employer');
+    } catch (e) {
+      // Errors are handled by FirebaseErrorListener via addDocumentNonBlocking
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -326,9 +364,3 @@ export default function PostJobPage() {
     </div>
   );
 }
-
-const Sparkles = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 3L14.5 9.5L21 12L14.5 14.5L12 21L9.5 14.5L3 12L9.5 9.5L12 3Z" fill="currentColor" />
-  </svg>
-);

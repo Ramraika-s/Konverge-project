@@ -14,7 +14,8 @@ import {
   ArrowUpRight,
   Eye,
   CheckCircle2,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -22,14 +23,32 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-
-const POSTINGS = [
-  { id: '1', title: 'Software Engineer Intern', applicants: 48, status: 'Active', clicks: 1204, postedOn: 'Oct 20, 2024' },
-  { id: '2', title: 'Content Writer', applicants: 12, status: 'Active', clicks: 450, postedOn: 'Oct 15, 2024' },
-  { id: '3', title: 'Graphic Designer', applicants: 0, status: 'Draft', clicks: 0, postedOn: 'Oct 10, 2024' },
-];
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 
 export function EmployerDashboard() {
+  const { user } = useUser();
+  const db = useFirestore();
+
+  const jobsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, 'jobListings'),
+      where('employerId', '==', user.uid),
+      orderBy('postedAt', 'desc')
+    );
+  }, [db, user]);
+
+  const { data: postings, isLoading } = useCollection(jobsQuery);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -46,9 +65,9 @@ export function EmployerDashboard() {
 
       <div className="grid md:grid-cols-3 gap-6">
         {[
-          { label: 'Active Postings', value: '5', icon: FilePlus, change: '+2 new', color: 'text-primary' },
-          { label: 'Total Applicants', value: '142', icon: Users, change: '+18% growth', color: 'text-blue-400' },
-          { label: 'Conversion Rate', value: '4.2%', icon: TrendingUp, change: '+0.5% up', color: 'text-green-400' },
+          { label: 'Active Postings', value: postings?.length || 0, icon: FilePlus, change: 'Updated', color: 'text-primary' },
+          { label: 'Total Applicants', value: 'N/A', icon: Users, change: 'Tracking enabled', color: 'text-blue-400' },
+          { label: 'Conversion Rate', value: 'N/A', icon: TrendingUp, change: 'Analyzing', color: 'text-green-400' },
         ].map((stat) => (
           <Card key={stat.label} className="glass-card border-white/5 rounded-2xl">
             <CardContent className="p-6">
@@ -78,24 +97,24 @@ export function EmployerDashboard() {
             <div>Position Details</div>
             <div className="text-center">Applicant Count</div>
             <div className="text-center">Status</div>
-            <div className="text-center">Insights</div>
+            <div className="text-center">Location</div>
             <div></div>
           </div>
           
           <div className="divide-y divide-white/5">
-            {POSTINGS.map((post) => (
+            {postings?.map((post) => (
               <div key={post.id} className="grid grid-cols-1 md:grid-cols-[1fr_140px_140px_140px_80px] gap-4 p-6 items-center hover:bg-white/5 transition-all group">
                 <div className="space-y-1">
                   <Link href={`/employer/job/${post.id}/applicants`} className="font-black text-lg group-hover:text-primary transition-colors block">
                     {post.title}
                   </Link>
                   <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                    <Clock className="w-3 h-3" /> Posted on {post.postedOn}
+                    <Clock className="w-3 h-3" /> {post.jobType}
                   </p>
                 </div>
                 <div className="flex flex-col items-center justify-center">
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-black px-4 py-1">
-                    {post.applicants} Students
+                    Check
                   </Badge>
                 </div>
                 <div className="flex items-center justify-center">
@@ -111,9 +130,8 @@ export function EmployerDashboard() {
                 </div>
                 <div className="text-center flex flex-col items-center justify-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                   <div className="flex items-center gap-1.5 text-white">
-                    <Eye className="w-3.5 h-3.5 text-primary" /> {post.clicks.toLocaleString()}
+                    <MapPin className="w-3.5 h-3.5 text-primary" /> {post.location}
                   </div>
-                  Total Views
                 </div>
                 <div className="text-right">
                   <DropdownMenu>
@@ -131,20 +149,26 @@ export function EmployerDashboard() {
                       <DropdownMenuItem className="cursor-pointer font-bold rounded-lg py-3">
                         <ArrowUpRight className="w-4 h-4 mr-3 text-primary" /> Edit Posting
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer font-bold rounded-lg py-3">
-                        <CheckCircle2 className="w-4 h-4 mr-3 text-primary" /> Close Listing
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive cursor-pointer font-bold rounded-lg py-3 hover:bg-destructive/10">
-                        Archive
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </div>
             ))}
+            {!postings?.length && (
+              <div className="p-10 text-center text-muted-foreground font-medium">
+                No active postings found. Start by creating your first job listing.
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const MapPin = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
