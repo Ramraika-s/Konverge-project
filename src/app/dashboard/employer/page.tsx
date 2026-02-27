@@ -10,7 +10,7 @@ import { doc } from 'firebase/firestore';
 
 /**
  * @fileOverview Dashboard page specifically for Employers.
- * Includes role-based access control.
+ * Includes strict role-based access control.
  */
 export default function EmployerDashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -24,6 +24,13 @@ export default function EmployerDashboardPage() {
   }, [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
+  // Guard: Check if user has an employer profile
+  const employerRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'employerProfiles', user.uid);
+  }, [db, user]);
+  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
+
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/auth');
@@ -33,10 +40,16 @@ export default function EmployerDashboardPage() {
     // Role Guard: If user is actually a job seeker, redirect them
     if (!isJobSeekerLoading && jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
+      return;
     }
-  }, [user, isUserLoading, jobSeekerProfile, isJobSeekerLoading, router]);
 
-  if (isUserLoading || isJobSeekerLoading) {
+    // Profile Completion Guard: If user has no profile at all, go to setup hub
+    if (!isEmployerLoading && !employerProfile && !isJobSeekerLoading && !jobSeekerProfile) {
+      router.replace('/dashboard');
+    }
+  }, [user, isUserLoading, jobSeekerProfile, isJobSeekerLoading, employerProfile, isEmployerLoading, router]);
+
+  if (isUserLoading || isJobSeekerLoading || isEmployerLoading) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -44,7 +57,8 @@ export default function EmployerDashboardPage() {
     );
   }
 
-  if (!user || jobSeekerProfile) return null;
+  // Final check to ensure we only render for employers
+  if (!user || jobSeekerProfile || !employerProfile) return null;
 
   return (
     <div className="container mx-auto px-4 py-12">
