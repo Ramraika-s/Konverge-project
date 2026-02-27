@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -37,7 +38,7 @@ export function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Student Fields
+  // Job Seeker Fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -78,10 +79,9 @@ export function SignUpForm() {
 
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
-      const profileRef = doc(db, isEmployer ? 'employerProfiles' : 'studentProfiles', result.user.uid);
+      const profileRef = doc(db, isEmployer ? 'employerProfiles' : 'jobseekerProfile', result.user.uid);
       
       const profileData = isEmployer ? {
-        // ... (keep your existing profileData logic)
         id: result.user.uid,
         companyName,
         companyWebsite,
@@ -94,8 +94,7 @@ export function SignUpForm() {
         updatedAt: new Date().toISOString(),
       } : {
         id: result.user.uid,
-        firstName,
-        lastName,
+        firstName,        lastName,
         email: result.user.email,
         contactNumber,
         educationSummary,
@@ -130,7 +129,6 @@ export function SignUpForm() {
         </Alert>
       )}
 
-      {/* Removed ScrollArea. Just a standard div container now. */}
       <div className="space-y-8 pb-6">
         <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all">
           <div className="space-y-0.5">
@@ -172,7 +170,6 @@ export function SignUpForm() {
 
           {!isEmployer ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
-              {/* ... All your Student Inputs remain EXACTLY the same ... */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
@@ -218,7 +215,6 @@ export function SignUpForm() {
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
-               {/* ... All your Employer Inputs remain EXACTLY the same ... */}
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Building2 className="w-3 h-3" /> Company Name

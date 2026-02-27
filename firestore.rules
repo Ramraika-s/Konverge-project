@@ -1,59 +1,32 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * NEXUSHIRE SECURITY RULES - PROTOTYPING PHASE
+     * KONNEX SECURITY RULES
      * 
      * Core Philosophy:
-     * This ruleset enforces a strict identity-based authorization model while remaining flexible on data 
-     * schema to support rapid iteration. It prioritizes "Authorization Independence" by relying on 
-     * denormalized ID fields within documents to avoid costly cross-document lookups (get() calls).
-     * 
-     * Data Structure:
-     * - /studentProfiles/{uid}: Private profiles owned by the authenticated student.
-     * - /employerProfiles/{uid}: Private profiles owned by the authenticated employer.
-     * - /jobListings/{jobId}: Publicly viewable listings created and managed by employers.
-     * - /applications/{appId}: Shared documents accessible by the applicant and the job's employer.
-     * 
-     * Key Security Decisions:
-     * 1. Path-based Ownership: Profile documents use the Firebase Auth UID as the document ID for 
-     *    instant, zero-cost authorization.
-     * 2. Denormalization for Auth: The 'applications' collection denormalizes both 'studentId' 
-     *    and 'employerId' to allow both parties to access the record without complex joins.
-     * 3. Immutability: Critical relational fields (like creator IDs) are enforced as immutable 
-     *    after creation to prevent ownership hijacking.
-     * 4. Authenticated Access: Most data requires a valid Firebase Auth session (isSignedIn).
+     * Identity-based authorization enforcing privacy for profiles while allowing 
+     * public access to job listings and shared access to applications.
      */
-
-    // ==========================================
-    // ANALYSIS & SYNTHESIS
-    // ==========================================
-    // 1. StudentProfile: Ownership Pattern (Path-based).
-    // 2. EmployerProfile: Ownership Pattern (Path-based).
-    // 3. JobListing: Public Read (Auth-only) / Owner-only Writes (Field-based).
-    // 4. Application: Shared Access / Closed Collaborators (Field-based: studentId & employerId).
 
     // ==========================================
     // HELPER FUNCTIONS
     // ==========================================
 
-    /** @description Checks if the request is from a signed-in user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the user's UID matches the provided ID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Checks if the user owns the existing document (used for update/delete). */
     function isExistingOwner(userId) {
       return resource != null && isOwner(userId);
     }
 
-    /** @description Checks if the UID matches a specific field in the document's data. */
     function isDataOwner(ownerIdField) {
       return isSignedIn() && request.auth.uid == ownerIdField;
     }
@@ -63,25 +36,19 @@ service cloud.firestore {
     // ==========================================
 
     /**
-     * @description Rules for student profiles. Accessible only by the student themselves.
-     * @path /studentProfiles/{studentId}
-     * @allow (get) If auth.uid == studentId
-     * @deny (list) If auth.uid != studentId (Users cannot browse other students)
-     * @principle Path-based ownership and relational integrity for root documents.
+     * @description Rules for job seeker profiles. Accessible only by the job seeker themselves.
+     * @path /jobseekerProfile/{jobseekerId}
      */
-    match /studentProfiles/{studentId} {
-      allow get, list: if isOwner(studentId);
-      allow create: if isOwner(studentId) && request.resource.data.id == studentId;
-      allow update: if isExistingOwner(studentId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(studentId);
+    match /jobseekerProfile/{jobseekerId} {
+      allow get, list: if isOwner(jobseekerId);
+      allow create: if isOwner(jobseekerId) && request.resource.data.id == jobseekerId;
+      allow update: if isExistingOwner(jobseekerId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(jobseekerId);
     }
 
     /**
      * @description Rules for employer profiles. Accessible only by the employer themselves.
      * @path /employerProfiles/{employerId}
-     * @allow (create) If auth.uid == employerId and data.id == employerId
-     * @deny (update) If user attempts to change the internal 'id' field
-     * @principle Path-based ownership and protection of identity-linked documents.
      */
     match /employerProfiles/{employerId} {
       allow get, list: if isOwner(employerId);
@@ -92,10 +59,6 @@ service cloud.firestore {
 
     /**
      * @description Job listings are public to all signed-in users but only editable by the posting employer.
-     * @path /jobListings/{jobListingId}
-     * @allow (list) Any authenticated user (to browse jobs)
-     * @allow (update) Only the employer whose UID matches 'employerId' field
-     * @principle Public Read with Owner-Only Writes via field-based validation.
      */
     match /jobListings/{jobListingId} {
       allow get, list: if isSignedIn();
@@ -105,15 +68,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Applications connect students and employers. Both parties need read/update access.
-     * @path /applications/{applicationId}
-     * @allow (get) If user is the applicant (studentId) OR the hiring manager (employerId)
-     * @deny (create) If studentId in data does not match the authenticated user
-     * @principle Multi-party shared access via denormalized relationship fields.
+     * @description Applications connect job seekers and employers.
      */
     match /applications/{applicationId} {
       allow get: if isSignedIn() && (isDataOwner(resource.data.studentId) || isDataOwner(resource.data.employerId));
-      allow list: if isSignedIn(); // Queries must filter by studentId or employerId
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
       allow update: if resource != null && (isDataOwner(resource.data.studentId) || isDataOwner(resource.data.employerId)) && request.resource.data.studentId == resource.data.studentId && request.resource.data.employerId == resource.data.employerId;
       allow delete: if resource != null && (isDataOwner(resource.data.studentId) || isDataOwner(resource.data.employerId));

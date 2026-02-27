@@ -1,79 +1,80 @@
+
 {
   "entities": {
-    "StudentProfile": {
+    "JobseekerProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentProfile",
+      "title": "JobseekerProfile",
       "type": "object",
-      "description": "Represents a student user's profile information, excluding authentication credentials, which are handled externally.",
+      "description": "Represents a job seeker user's profile information, excluding authentication credentials, which are handled externally.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the StudentProfile entity. This is expected to align with the external authentication system's user ID."
+          "description": "Unique identifier for the JobseekerProfile entity. This is expected to align with the external authentication system's user ID."
         },
         "firstName": {
           "type": "string",
-          "description": "The first name of the student."
+          "description": "The first name of the job seeker."
         },
         "lastName": {
           "type": "string",
-          "description": "The last name of the student."
+          "description": "The last name of the job seeker."
         },
         "email": {
           "type": "string",
-          "description": "The primary email address of the student.",
+          "description": "The primary email address of the job seeker.",
           "format": "email"
         },
         "contactNumber": {
           "type": "string",
-          "description": "The contact phone number of the student."
+          "description": "The contact phone number of the job seeker."
         },
         "educationSummary": {
           "type": "string",
-          "description": "A summary of the student's educational background."
+          "description": "A summary of the job seeker's educational background."
         },
         "skills": {
           "type": "array",
-          "description": "A list of skills possessed by the student.",
+          "description": "A list of skills possessed by the job seeker.",
           "items": {
             "type": "string"
           }
         },
         "resumeUrl": {
           "type": "string",
-          "description": "A URL pointing to the student's resume.",
+          "description": "A URL pointing to the job seeker's resume.",
           "format": "uri"
         },
         "portfolioUrl": {
           "type": "string",
-          "description": "An optional URL pointing to the student's professional portfolio.",
+          "description": "An optional URL pointing to the job seeker's professional portfolio.",
           "format": "uri"
         },
         "preferredRoles": {
           "type": "array",
-          "description": "A list of job roles the student is interested in.",
+          "description": "A list of job roles the job seeker is interested in.",
           "items": {
             "type": "string"
           }
         },
         "preferredLocations": {
           "type": "array",
-          "description": "A list of preferred job locations for the student.",
+          "description": "A list of preferred job locations for the job seeker.",
           "items": {
             "type": "string"
           }
         },
         "isRemotePreferred": {
           "type": "boolean",
-          "description": "Indicates if the student prefers remote work opportunities."
+          "description": "Indicates if the job seeker prefers remote work opportunities."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp when the student profile was created.",
+          "description": "Timestamp when the profile was created.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp when the student profile was last updated.",
+          "description": "Timestamp when the profile was last updated.",
           "format": "date-time"
         }
       },
@@ -249,7 +250,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Application",
       "type": "object",
-      "description": "Represents a student's application to a specific job listing.",
+      "description": "Represents an application to a specific job listing.",
       "properties": {
         "id": {
           "type": "string",
@@ -257,7 +258,7 @@
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to StudentProfile. (Relationship: StudentProfile 1:N Application)"
+          "description": "Reference to JobseekerProfile. (Relationship: JobseekerProfile 1:N Application)"
         },
         "jobListingId": {
           "type": "string",
@@ -310,17 +311,17 @@
   "firestore": {
     "structure": [
       {
-        "path": "/studentProfiles/{studentId}",
+        "path": "/jobseekerProfile/{jobseekerId}",
         "definition": {
-          "entityName": "StudentProfile",
+          "entityName": "JobseekerProfile",
           "schema": {
-            "$ref": "#/backend/entities/StudentProfile"
+            "$ref": "#/backend/entities/JobseekerProfile"
           },
-          "description": "Stores individual student profiles. Each document's ID (`studentId`) is the Firebase Authentication UID of the student.",
+          "description": "Stores individual job seeker profiles. Each document's ID is the Firebase Authentication UID of the user.",
           "params": [
             {
-              "name": "studentId",
-              "description": "The unique identifier of the student."
+              "name": "jobseekerId",
+              "description": "The unique identifier of the job seeker."
             }
           ]
         }
@@ -364,7 +365,7 @@
           "schema": {
             "$ref": "#/backend/entities/Application"
           },
-          "description": "Stores student applications to job listings.",
+          "description": "Stores applications to job listings.",
           "params": [
             {
               "name": "applicationId",
@@ -374,6 +375,6 @@
         }
       }
     ],
-    "reasoning": "Standard Firestore structure for Konnex."
+    "reasoning": "Renamed studentProfiles to jobseekerProfile for better clarity."
   }
 }
