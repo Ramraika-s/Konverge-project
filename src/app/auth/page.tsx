@@ -10,9 +10,8 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
 } from 'firebase/auth';
-import { doc, serverTimestamp } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -230,7 +229,7 @@ export default function AuthPage() {
                   )}
 
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
                         <Input 
@@ -256,7 +255,7 @@ export default function AuthPage() {
                     </div>
 
                     {activeTab === 'signup' && !isEmployer && (
-                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2 pt-4">
                          <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
@@ -303,7 +302,7 @@ export default function AuthPage() {
                     )}
 
                     {activeTab === 'signup' && isEmployer && (
-                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2 pt-4">
                          <div className="space-y-2">
                             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                               <Building2 className="w-3 h-3" /> Company Name
