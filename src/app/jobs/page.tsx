@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -286,18 +286,19 @@ export default function JobsPage() {
                 <Accordion type="multiple" className="w-full">
                   {filteredCategories.map((cat) => (
                     <AccordionItem key={cat.id} value={cat.id} className="border-white/5">
-                      <AccordionTrigger className="hover:no-underline py-3">
-                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Checkbox 
-                            id={`cat-${cat.id}`} 
-                            checked={selectedCategories.includes(cat.name)}
-                            onCheckedChange={() => toggleCategory(cat.name)}
-                          />
-                          <span className="text-sm font-bold">{cat.name}</span>
-                        </div>
-                      </AccordionTrigger>
+                      <div className="flex items-center gap-2 w-full pr-2">
+                        <Checkbox 
+                          id={`cat-${cat.id}`} 
+                          checked={selectedCategories.includes(cat.name)}
+                          onCheckedChange={() => toggleCategory(cat.name)}
+                          className="z-10"
+                        />
+                        <AccordionTrigger className="flex-1 hover:no-underline py-3">
+                          <span className="text-sm font-bold text-left">{cat.name}</span>
+                        </AccordionTrigger>
+                      </div>
                       <AccordionContent>
-                        <div className="space-y-3 pl-6 pt-2">
+                        <div className="space-y-3 pl-6 pt-2 pb-2">
                           {cat.subcategories.map(sub => (
                             <div key={sub} className="flex items-center gap-2">
                               <Checkbox 
@@ -324,7 +325,6 @@ export default function JobsPage() {
                   <span className="text-xs font-black text-primary">${salaryRange[0].toLocaleString()}+</span>
                 </div>
                 <Slider 
-                  defaultValue={[0]} 
                   max={10000} 
                   step={500}
                   value={salaryRange}
@@ -389,7 +389,6 @@ export default function JobsPage() {
                           width={64}
                           height={64}
                           className="object-cover"
-                          data-ai-hint="company logo"
                         />
                       </div>
                       <div className="space-y-1">
