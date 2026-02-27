@@ -159,7 +159,7 @@ export default function AuthPage() {
                 <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
                   <div className="space-y-0.5">
                     <Label className="text-sm font-bold">Register as Employer</Label>
-                    <p className="text-[10px] text-muted-foreground">Hire top student talent</p>
+                    <p className="text-[10px] text-muted-foreground">Hire top talent</p>
                   </div>
                   <Switch 
                     checked={isEmployer} 
