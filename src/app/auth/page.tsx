@@ -35,7 +35,8 @@ export default function AuthPage() {
   // Handle the result of the Google Redirect
   useEffect(() => {
     const checkRedirectResult = async () => {
-      if (!auth) return;
+      if (!auth) return; 
+      
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
@@ -68,22 +69,17 @@ export default function AuthPage() {
 
   const handleGoogleAuth = async () => {
     if (!auth || isLoading) return; 
-    
     setIsLoading(true);
 
     try {
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: 'select_account' 
-      });
-
-      // Navigate away to Google's sign-in page
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithRedirect(auth, provider);
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Google Auth Failed",
-        description: err.message || 'An error occurred initiating Google authentication.',
+        title: "Redirect Failed",
+        description: err.message || 'Could not connect to Google.',
       });
       setIsLoading(false);
     }
