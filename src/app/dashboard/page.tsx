@@ -1,20 +1,20 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
-import { StudentDashboard } from '@/components/dashboard/StudentDashboard';
-import { EmployerDashboard } from '@/components/dashboard/EmployerDashboard';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Briefcase, Building2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
+/**
+ * @fileOverview Central dashboard selector page.
+ * Allows users to choose between Job Seeker and Employer views.
+ */
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const [role, setRole] = useState<'student' | 'employer'>('student');
 
-  // Protected Route Check
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/auth');
@@ -32,26 +32,40 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
-        <div className="animate-in fade-in slide-in-from-left duration-500">
-          <h1 className="text-4xl font-black mb-2 tracking-tight">My <span className="text-primary gold-glow">Konnex</span></h1>
-          <p className="text-muted-foreground font-medium">Manage your professional journey and connections.</p>
+    <div className="container mx-auto px-4 py-24">
+      <div className="max-w-2xl mx-auto text-center space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-4">
+          <h1 className="text-5xl font-black tracking-tight">Welcome to <span className="text-primary gold-glow">Konnex</span></h1>
+          <p className="text-xl text-muted-foreground">Select your destination to manage your professional activities.</p>
         </div>
-        
-        <div className="flex items-center space-x-3 bg-card/50 p-2 rounded-2xl border border-white/5 backdrop-blur-sm animate-in fade-in slide-in-from-right duration-500">
-          <Label htmlFor="role-mode" className={`text-[10px] font-black uppercase tracking-widest cursor-pointer transition-colors ${role === 'student' ? 'text-primary' : 'text-muted-foreground'}`}>Student</Label>
-          <Switch 
-            id="role-mode" 
-            checked={role === 'employer'}
-            onCheckedChange={(checked) => setRole(checked ? 'employer' : 'student')}
-          />
-          <Label htmlFor="role-mode" className={`text-[10px] font-black uppercase tracking-widest cursor-pointer transition-colors ${role === 'employer' ? 'text-primary' : 'text-muted-foreground'}`}>Employer</Label>
-        </div>
-      </div>
 
-      <div className="animate-in fade-in duration-700 slide-in-from-bottom-4">
-        {role === 'student' ? <StudentDashboard /> : <EmployerDashboard />}
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card 
+            className="glass-card hover:border-primary/50 transition-all cursor-pointer group p-4 border-2"
+            onClick={() => router.push('/dashboard/job-seeker')}
+          >
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 mx-auto group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                <Briefcase className="w-8 h-8" />
+              </div>
+              <CardTitle className="text-2xl font-bold mb-2">Job Seeker Hub</CardTitle>
+              <CardDescription className="text-base">Track your applications, saved jobs, and career progress.</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card 
+            className="glass-card hover:border-primary/50 transition-all cursor-pointer group p-4 border-2"
+            onClick={() => router.push('/dashboard/employer')}
+          >
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-white mb-6 mx-auto group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
+                <Building2 className="w-8 h-8" />
+              </div>
+              <CardTitle className="text-2xl font-bold mb-2">Employer Hub</CardTitle>
+              <CardDescription className="text-base">Post new listings, manage applicants, and hire talent.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     </div>
   );

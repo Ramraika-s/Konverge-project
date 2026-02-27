@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Briefcase, LayoutDashboard, Search, User, LogOut, Menu, Loader2 } from 'lucide-react';
+import { Briefcase, Search, User, LogOut, Menu, Loader2, UserCircle, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -24,7 +24,6 @@ export function Navbar() {
   
   const navLinks = [
     { name: 'Find Jobs', href: '/jobs', icon: Search },
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   ];
 
   const handleLogout = async () => {
@@ -59,6 +58,26 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+            {user && (
+              <div className="flex items-center gap-4 border-l border-white/10 pl-4">
+                <Link
+                  href="/dashboard/job-seeker"
+                  className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
+                    pathname === '/dashboard/job-seeker' ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Seeker Hub
+                </Link>
+                <Link
+                  href="/dashboard/employer"
+                  className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
+                    pathname === '/dashboard/employer' ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Employer Hub
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -78,17 +97,38 @@ export function Navbar() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-secondary/50 border border-white/5">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-secondary/50 border border-white/5 p-0 overflow-hidden ring-offset-background transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 glass-card border-white/10">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" /> Profile
+                <DropdownMenuContent align="end" className="w-64 glass-card border-white/10 p-2">
+                  <div className="px-2 py-3">
+                    <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Authenticated as</p>
+                    <p className="text-sm font-medium truncate text-white">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
+                    <UserCircle className="mr-3 h-5 w-5 text-primary" /> 
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm">Job Seeker Hub</span>
+                      <span className="text-[10px] text-muted-foreground">Manage applications</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/employer')}>
+                    <Building2 className="mr-3 h-5 w-5 text-primary" /> 
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm">Employer Hub</span>
+                      <span className="text-[10px] text-muted-foreground">Manage listings</span>
+                    </div>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" /> Log out
+                  <DropdownMenuItem className="text-destructive cursor-pointer rounded-lg py-3" onClick={handleLogout}>
+                    <LogOut className="mr-3 h-5 w-5" /> 
+                    <span className="font-bold text-sm">Log out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -102,25 +142,31 @@ export function Navbar() {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-background border-l-white/5">
-                <div className="flex flex-col gap-6 mt-8">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="text-lg font-medium flex items-center gap-3"
-                    >
-                      <link.icon className="w-5 h-5 text-primary" />
-                      {link.name}
-                    </Link>
-                  ))}
+              <SheetContent side="right" className="bg-background border-l-white/5 p-8">
+                <div className="flex flex-col gap-8 mt-12">
+                  <Link href="/jobs" className="text-xl font-bold flex items-center gap-4 group">
+                    <Search className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                    Find Jobs
+                  </Link>
+                  {user && (
+                    <>
+                      <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
+                        <UserCircle className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                        Job Seeker Hub
+                      </Link>
+                      <Link href="/dashboard/employer" className="text-xl font-bold flex items-center gap-4 group">
+                        <Building2 className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                        Employer Hub
+                      </Link>
+                    </>
+                  )}
                   <hr className="border-white/5" />
                   {!user ? (
                     <Link href="/auth">
-                      <Button className="w-full gold-border-glow">Get Started</Button>
+                      <Button className="w-full h-14 font-black gold-border-glow text-lg">Get Started</Button>
                     </Link>
                   ) : (
-                    <Button variant="destructive" className="w-full" onClick={handleLogout}>Log Out</Button>
+                    <Button variant="destructive" className="w-full h-14 font-black text-lg" onClick={handleLogout}>Log Out</Button>
                   )}
                 </div>
               </SheetContent>
