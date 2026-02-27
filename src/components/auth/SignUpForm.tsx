@@ -131,9 +131,9 @@ export function SignUpForm() {
         </Alert>
       )}
 
-      <ScrollArea className="max-h-[500px] -mx-1 px-1">
-        <div className="space-y-6 pb-6 pr-4">
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all">
+      <ScrollArea className="max-h-[500px] w-full rounded-md">
+        <div className="space-y-6 pb-6 px-1">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all mx-0.5">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold flex items-center gap-2">
                 {isEmployer ? <Building2 className="w-4 h-4 text-primary" /> : <User className="w-4 h-4 text-primary" />}
@@ -147,7 +147,7 @@ export function SignUpForm() {
             />
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 px-0.5">
             <div className="space-y-2">
               <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
               <Input 
