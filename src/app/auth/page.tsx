@@ -68,7 +68,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-background">
+    <div className="min-h-[calc(100vh-64px)] grid place-items-center px-4 py-12 relative bg-background">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="w-full max-w-lg relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
