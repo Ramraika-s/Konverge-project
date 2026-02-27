@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -39,18 +38,35 @@ export default function AuthPage() {
   }, [user, isUserLoading, router]);
 
   const handleGoogleAuth = async () => {
-    if (!auth) return;
+    // 1. Strict early return if already loading or missing auth
+    if (!auth || isLoading) return; 
+    
     setIsLoading(true);
 
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      toast({
-        title: "Signed in with Google",
-        description: "Successfully authenticated.",
+      // 2. Force the provider to select an account to prevent silent failures
+      provider.setCustomParameters({
+        prompt: 'select_account' 
       });
-      router.push('/dashboard');
+
+      const result = await signInWithPopup(auth, provider);
+      
+      // 3. Ensure we actually got a user back before celebrating
+      if (result.user) {
+        toast({
+          title: "Signed in with Google",
+          description: "Successfully authenticated.",
+        });
+        router.push('/dashboard');
+      }
     } catch (err: any) {
+      // 4. Safely handle the specific "closed by user" error to avoid ugly UI
+      if (err.code === 'auth/popup-closed-by-user') {
+         setIsLoading(false); // Just reset state, don't show a massive error
+         return; 
+      }
+
       toast({
         variant: "destructive",
         title: "Google Auth Failed",
