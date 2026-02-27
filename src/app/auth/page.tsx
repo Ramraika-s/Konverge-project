@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -81,7 +82,7 @@ export default function AuthPage() {
             <TabsTrigger value="signup" className="font-bold rounded-lg data-[state=active]:bg-background transition-all">Sign Up</TabsTrigger>
           </TabsList>
 
-          <Card className="glass-card border-white/5 shadow-2xl rounded-3xl overflow-hidden border">
+          <Card className="glass-card border-white/5 shadow-2xl rounded-3xl border">
             <CardHeader className="text-center pb-2">
               <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
                 <Briefcase className="w-6 h-6 text-primary-foreground" />
@@ -90,16 +91,16 @@ export default function AuthPage() {
               <CardDescription className="text-muted-foreground font-medium">Connecting ambition with innovation.</CardDescription>
             </CardHeader>
             
-            <CardContent className="pt-6">
-              <TabsContent value="login" className="mt-0">
+            <CardContent className="pt-6 px-8">
+              <TabsContent value="login" className="mt-0 outline-hidden">
                 <LoginForm />
               </TabsContent>
-              <TabsContent value="signup" className="mt-0">
+              <TabsContent value="signup" className="mt-0 outline-hidden">
                 <SignUpForm />
               </TabsContent>
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 pt-4 border-t border-white/5">
+            <CardFooter className="flex flex-col gap-4 pt-4 px-8 pb-8 border-t border-white/5">
               <div className="relative w-full py-2">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-white/10" />

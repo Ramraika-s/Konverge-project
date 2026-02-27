@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -124,15 +125,15 @@ export function SignUpForm() {
   return (
     <form onSubmit={handleSignUp} className="space-y-6">
       {error && (
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-xs font-bold">{error}</AlertDescription>
         </Alert>
       )}
 
-      <ScrollArea className="max-h-[500px] pr-4">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
+      <ScrollArea className="max-h-[500px] -mx-1 px-1">
+        <div className="space-y-6 pb-6 pr-4">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold flex items-center gap-2">
                 {isEmployer ? <Building2 className="w-4 h-4 text-primary" /> : <User className="w-4 h-4 text-primary" />}
@@ -155,7 +156,7 @@ export function SignUpForm() {
                 placeholder="name@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12 bg-white/5 border-white/10 rounded-xl" 
+                className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50 transition-colors" 
               />
             </div>
             <div className="space-y-2">
@@ -166,7 +167,7 @@ export function SignUpForm() {
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-12 bg-white/5 border-white/10 rounded-xl" 
+                className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50 transition-colors" 
               />
             </div>
 
@@ -175,42 +176,42 @@ export function SignUpForm() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
-                    <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10" />
+                    <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name</Label>
-                    <Input placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10" />
+                    <Input placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Phone className="w-3 h-3" /> Contact Number
                   </Label>
-                  <Input placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10" />
+                  <Input placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <FileText className="w-3 h-3" /> Education Summary
                   </Label>
-                  <Textarea placeholder="E.g. Computer Science Senior" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px]" />
+                  <Textarea placeholder="E.g. Computer Science Senior" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px] rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Sparkles className="w-3 h-3" /> Skills (comma separated)
                   </Label>
-                  <Input placeholder="React, TypeScript, UI Design" value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10" />
+                  <Input placeholder="React, TypeScript, UI Design" value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Roles</Label>
-                    <Input placeholder="Frontend, Backend" value={preferredRoles} onChange={(e) => setPreferredRoles(e.target.value)} className="bg-white/5 border-white/10" />
+                    <Input placeholder="Frontend, Backend" value={preferredRoles} onChange={(e) => setPreferredRoles(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Locations</Label>
-                    <Input placeholder="New York, London" value={preferredLocations} onChange={(e) => setPreferredLocations(e.target.value)} className="bg-white/5 border-white/10" />
+                    <Input placeholder="New York, London" value={preferredLocations} onChange={(e) => setPreferredLocations(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                   <Label className="text-sm font-bold">Remote Preferred</Label>
                   <Switch checked={isRemotePreferred} onCheckedChange={setIsRemotePreferred} />
                 </div>
@@ -221,28 +222,28 @@ export function SignUpForm() {
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Building2 className="w-3 h-3" /> Company Name
                   </Label>
-                  <Input placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10" />
+                  <Input placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Globe className="w-3 h-3" /> Company Website
                   </Label>
-                  <Input placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10" />
+                  <Input placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Short Description</Label>
-                  <Textarea placeholder="Tell us about your company..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px]" />
+                  <Textarea placeholder="Tell us about your company..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px] rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
-                    <Input placeholder="Jane Smith" value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10" />
+                    <Input placeholder="Jane Smith" value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <MapPin className="w-3 h-3" /> Location
                     </Label>
-                    <Input placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10" />
+                    <Input placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                 </div>
               </div>
@@ -251,13 +252,15 @@ export function SignUpForm() {
         </div>
       </ScrollArea>
 
-      <Button 
-        type="submit"
-        disabled={isLoading}
-        className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground"
-      >
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Complete ${isEmployer ? 'Employer' : 'Seeker'} Setup`}
-      </Button>
+      <div className="pt-2">
+        <Button 
+          type="submit"
+          disabled={isLoading}
+          className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+        >
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Complete ${isEmployer ? 'Employer' : 'Seeker'} Setup`}
+        </Button>
+      </div>
     </form>
   );
 }
