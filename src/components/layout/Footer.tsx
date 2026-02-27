@@ -17,7 +17,7 @@ export function Footer() {
                 <Briefcase className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold tracking-tighter gold-glow">
-                Nexus<span className="text-primary">Hire</span>
+                Konnex
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
@@ -51,7 +51,7 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-6">For Employers</h4>
             <ul className="space-y-4">
-              <li><Link href="/auth/signup" className="text-sm text-muted-foreground hover:text-white transition-colors">Post a Vacancy</Link></li>
+              <li><Link href="/auth" className="text-sm text-muted-foreground hover:text-white transition-colors">Post a Vacancy</Link></li>
               <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-white transition-colors">Employer Hub</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Talent Solutions</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Pricing Plans</Link></li>
@@ -68,11 +68,11 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span>+1 (800) NEXUS-HIRE</span>
+                <span>+1 (800) KONNEX-HIRE</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span>hello@nexushire.com</span>
+                <span>hello@konnex.io</span>
               </li>
             </ul>
           </div>
@@ -80,7 +80,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground font-medium">
-            © {currentYear} NexusHire. All rights reserved. Built for the next generation.
+            © {currentYear} Konnex. All rights reserved. Built for the next generation.
           </p>
           <div className="flex items-center gap-6">
             <Link href="#" className="text-xs text-muted-foreground hover:text-white transition-colors">Privacy Policy</Link>

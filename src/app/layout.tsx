@@ -6,7 +6,7 @@ import {Toaster} from '@/components/ui/toaster';
 import {FirebaseClientProvider} from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'NexusHire | Connecting Talent with Opportunity',
+  title: 'Konnex | Connecting Talent with Opportunity',
   description: 'The premium job board for students and innovative employers.',
 };
 

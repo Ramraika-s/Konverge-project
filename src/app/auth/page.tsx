@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -18,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, Loader2, AlertCircle, Github } from 'lucide-react';
+import { Briefcase, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 
@@ -56,15 +55,13 @@ export default function AuthPage() {
         await signInWithEmailAndPassword(auth, email, password);
         toast({
           title: "Welcome back!",
-          description: "Successfully signed in with email.",
+          description: "Successfully signed in.",
         });
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        // In a full implementation, you would trigger a profile creation 
-        // in Firestore here based on the 'isEmployer' flag.
         toast({
           title: "Account created!",
-          description: `Welcome to NexusHire as a ${isEmployer ? 'Employer' : 'Student'}.`,
+          description: `Welcome to Konnex as a ${isEmployer ? 'Employer' : 'Student'}.`,
         });
       }
       router.push('/dashboard');
@@ -108,7 +105,7 @@ export default function AuthPage() {
       await sendPasswordResetEmail(auth!, email);
       toast({
         title: "Reset link sent",
-        description: "Check your email for password reset instructions.",
+        description: "Check your email for instructions.",
       });
     } catch (err: any) {
       setError(err.message);
@@ -118,17 +115,13 @@ export default function AuthPage() {
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-sm font-medium text-muted-foreground animate-pulse font-bold tracking-widest uppercase">Authenticating</p>
-        </div>
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-background">
-      {/* Background Decor */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -138,8 +131,8 @@ export default function AuthPage() {
         
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary/50 p-1 rounded-xl">
-            <TabsTrigger value="login" className="font-bold rounded-lg data-[state=active]:bg-background data-[state=active]:text-primary transition-all">Log In</TabsTrigger>
-            <TabsTrigger value="signup" className="font-bold rounded-lg data-[state=active]:bg-background data-[state=active]:text-primary transition-all">Sign Up</TabsTrigger>
+            <TabsTrigger value="login" className="font-bold rounded-lg data-[state=active]:bg-background transition-all">Log In</TabsTrigger>
+            <TabsTrigger value="signup" className="font-bold rounded-lg data-[state=active]:bg-background transition-all">Sign Up</TabsTrigger>
           </TabsList>
 
           <Card className="glass-card border-white/5 shadow-2xl rounded-3xl overflow-hidden border">
@@ -147,7 +140,7 @@ export default function AuthPage() {
               <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
                 <Briefcase className="w-6 h-6 text-primary-foreground" />
               </div>
-              <CardTitle className="text-3xl font-black tracking-tight">NexusHire</CardTitle>
+              <CardTitle className="text-3xl font-black tracking-tight">Konnex</CardTitle>
               <CardDescription className="text-muted-foreground font-medium">Connecting ambition with innovation.</CardDescription>
             </CardHeader>
             
@@ -181,7 +174,7 @@ export default function AuthPage() {
                     placeholder="name@example.com" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 bg-white/5 border-white/10 focus:border-primary/50 transition-all rounded-xl focus:ring-primary" 
+                    className="h-12 bg-white/5 border-white/10 rounded-xl" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -200,7 +193,7 @@ export default function AuthPage() {
                     placeholder="••••••••" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 bg-white/5 border-white/10 focus:border-primary/50 transition-all rounded-xl focus:ring-primary" 
+                    className="h-12 bg-white/5 border-white/10 rounded-xl" 
                   />
                 </div>
               </div>
@@ -211,7 +204,7 @@ export default function AuthPage() {
                 <Button 
                   onClick={() => handleEmailAuth('login')} 
                   disabled={isLoading}
-                  className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground"
                 >
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
                 </Button>
@@ -220,7 +213,7 @@ export default function AuthPage() {
                 <Button 
                   onClick={() => handleEmailAuth('signup')} 
                   disabled={isLoading}
-                  className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground"
                 >
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Create ${isEmployer ? 'Employer' : 'Student'} Account`}
                 </Button>
@@ -263,10 +256,6 @@ export default function AuthPage() {
                   Sign in with Google
                 </Button>
               </div>
-              
-              <p className="text-center text-[10px] text-muted-foreground px-6 mt-2 leading-relaxed">
-                By continuing, you agree to our <Link href="#" className="underline hover:text-primary">Terms of Service</Link> and <Link href="#" className="underline hover:text-primary">Privacy Policy</Link>.
-              </p>
             </CardFooter>
           </Card>
         </Tabs>

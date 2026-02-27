@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Briefcase, GraduationCap, Building2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
@@ -30,7 +29,7 @@ export default function Home() {
             Where Ambition Meets <span className="text-primary italic gold-glow">Opportunity.</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            NexusHire bridges the gap between top-tier student talent and the world's most innovative employers through a premium, data-driven experience.
+            Konnex bridges the gap between top-tier student talent and the world's most innovative employers through a premium, data-driven experience.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/jobs">
@@ -38,7 +37,7 @@ export default function Home() {
                 Explore Jobs <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <Link href="/auth/signup">
+            <Link href="/auth">
               <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold border-white/10 hover:bg-white/5">
                 Join as Employer
               </Button>

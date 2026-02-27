@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -11,7 +10,6 @@ import {
   DollarSign, 
   Filter, 
   Clock, 
-  CheckCircle2,
   ChevronRight
 } from 'lucide-react';
 import { 
@@ -88,7 +86,7 @@ export default function JobsPage() {
         {/* Search Header */}
         <div className="max-w-4xl">
           <h1 className="text-4xl font-black mb-4">Find Your Next <span className="text-primary gold-glow">Career Move</span></h1>
-          <p className="text-muted-foreground text-lg mb-8">Browse thousands of opportunities from top companies looking for student talent.</p>
+          <p className="text-muted-foreground text-lg mb-8">Browse thousands of opportunities on Konnex from top companies looking for student talent.</p>
           
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow">
@@ -164,7 +162,7 @@ export default function JobsPage() {
           {/* Jobs List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Showing 48 jobs matching your search</span>
+              <span className="text-sm text-muted-foreground">Showing results for your search</span>
               <Select defaultValue="newest">
                 <SelectTrigger className="w-[180px] h-9 border-none bg-transparent">
                   <SelectValue placeholder="Sort by" />

@@ -316,11 +316,11 @@
           "schema": {
             "$ref": "#/backend/entities/StudentProfile"
           },
-          "description": "Stores individual student profiles. Each document's ID (`studentId`) is the Firebase Authentication UID of the student. Access is restricted to the owner (`request.auth.uid == studentId`).",
+          "description": "Stores individual student profiles. Each document's ID (`studentId`) is the Firebase Authentication UID of the student.",
           "params": [
             {
               "name": "studentId",
-              "description": "The unique identifier of the student, matching their Firebase Authentication UID."
+              "description": "The unique identifier of the student."
             }
           ]
         }
@@ -332,11 +332,11 @@
           "schema": {
             "$ref": "#/backend/entities/EmployerProfile"
           },
-          "description": "Stores individual employer profiles. Each document's ID (`employerId`) is the Firebase Authentication UID of the employer. Access is restricted to the owner (`request.auth.uid == employerId`).",
+          "description": "Stores individual employer profiles. Each document's ID (`employerId`) is the Firebase Authentication UID of the employer.",
           "params": [
             {
               "name": "employerId",
-              "description": "The unique identifier of the employer, matching their Firebase Authentication UID."
+              "description": "The unique identifier of the employer."
             }
           ]
         }
@@ -348,7 +348,7 @@
           "schema": {
             "$ref": "#/backend/entities/JobListing"
           },
-          "description": "Contains job opportunities posted by employers. Each document includes an 'employerId' field that references the owner (the employer who posted it). All authenticated users can read listings, but only the owning employer can create, update, or delete their specific listing.",
+          "description": "Contains job opportunities posted by employers.",
           "params": [
             {
               "name": "jobListingId",
@@ -364,7 +364,7 @@
           "schema": {
             "$ref": "#/backend/entities/Application"
           },
-          "description": "Stores student applications to job listings. Access is granted to either the student who submitted the application or the employer who owns the job listing.",
+          "description": "Stores student applications to job listings.",
           "params": [
             {
               "name": "applicationId",
@@ -374,6 +374,6 @@
         }
       }
     ],
-    "reasoning": "Standard Firestore structure for NexusHire."
+    "reasoning": "Standard Firestore structure for Konnex."
   }
 }
