@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
@@ -77,4 +76,35 @@
 
 .gold-border-glow:focus {
   box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+}
+
+@keyframes shine-sweep {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.gold-shine-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.gold-shine-hover::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(234, 179, 8, 0.4),
+    transparent
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+
+.gold-shine-hover:hover::after {
+  animation: shine-sweep 0.7s ease-in-out;
 }

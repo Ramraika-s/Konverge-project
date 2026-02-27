@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -113,7 +112,7 @@ export default function AuthPage() {
               <div className="grid grid-cols-1 gap-4 w-full">
                 <Button 
                   variant="outline" 
-                  className="h-11 border-white/10 hover:bg-white/5 rounded-xl font-bold flex gap-2 transition-all"
+                  className="h-11 border-white/10 hover:bg-white/5 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover"
                   onClick={handleGoogleAuth}
                   disabled={isLoading}
                 >
