@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -147,7 +146,9 @@ export function SignUpForm() {
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+            <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Email Address <span className="text-destructive">*</span>
+            </Label>
             <Input 
               id="signup-email" 
               type="email" 
@@ -158,7 +159,9 @@ export function SignUpForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="signup-password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
+            <Label htmlFor="signup-password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Password <span className="text-destructive">*</span>
+            </Label>
             <Input 
               id="signup-password" 
               type="password" 
@@ -173,23 +176,27 @@ export function SignUpForm() {
             <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    First Name <span className="text-destructive">*</span>
+                  </Label>
                   <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Last Name <span className="text-destructive">*</span>
+                  </Label>
                   <Input placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Phone className="w-3 h-3" /> Contact Number
+                  <Phone className="w-3 h-3" /> Contact Number <span className="text-destructive">*</span>
                 </Label>
                 <Input placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <FileText className="w-3 h-3" /> Education Summary
+                  <FileText className="w-3 h-3" /> Education Summary <span className="text-destructive">*</span>
                 </Label>
                 <Textarea placeholder="E.g. Computer Science Senior" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl focus:border-primary/50 leading-relaxed" />
               </div>
@@ -218,13 +225,13 @@ export function SignUpForm() {
             <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Building2 className="w-3 h-3" /> Company Name
+                  <Building2 className="w-3 h-3" /> Company Name <span className="text-destructive">*</span>
                 </Label>
                 <Input placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Globe className="w-3 h-3" /> Company Website
+                  <Globe className="w-3 h-3" /> Company Website <span className="text-destructive">*</span>
                 </Label>
                 <Input placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
               </div>
@@ -234,12 +241,12 @@ export function SignUpForm() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person <span className="text-destructive">*</span></Label>
                   <Input placeholder="Jane Smith" value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <MapPin className="w-3 h-3" /> Location
+                    <MapPin className="w-3 h-3" /> Location <span className="text-destructive">*</span>
                   </Label>
                   <Input placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                 </div>

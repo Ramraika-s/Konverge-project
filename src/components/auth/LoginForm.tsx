@@ -58,7 +58,9 @@ export function LoginForm() {
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="login-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+          <Label htmlFor="login-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Email Address <span className="text-destructive">*</span>
+          </Label>
           <Input 
             id="login-email" 
             type="email" 
@@ -69,7 +71,9 @@ export function LoginForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="login-password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
+          <Label htmlFor="login-password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Password <span className="text-destructive">*</span>
+          </Label>
           <Input 
             id="login-password" 
             type="password" 
