@@ -42,7 +42,7 @@ export function Footer() {
             <h4 className="text-sm font-bold uppercase tracking-widest text-primary mb-6">For Job Seekers</h4>
             <ul className="space-y-4">
               <li><Link href="/jobs" className="text-sm text-muted-foreground hover:text-white transition-colors">Browse Jobs</Link></li>
-              <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-white transition-colors">Job Seeker Dashboard</Link></li>
+              <li><Link href="/dashboard/job-seeker" className="text-sm text-muted-foreground hover:text-white transition-colors">Job Seeker Dashboard</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Career Resources</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Resume Builder</Link></li>
             </ul>
@@ -52,8 +52,8 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-6">For Employers</h4>
             <ul className="space-y-4">
-              <li><Link href="/auth" className="text-sm text-muted-foreground hover:text-white transition-colors">Post a Vacancy</Link></li>
-              <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-white transition-colors">Employer Hub</Link></li>
+              <li><Link href="/auth#signup" className="text-sm text-muted-foreground hover:text-white transition-colors">Post a Vacancy</Link></li>
+              <li><Link href="/dashboard/employer" className="text-sm text-muted-foreground hover:text-white transition-colors">Employer Hub</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Talent Solutions</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Pricing Plans</Link></li>
             </ul>

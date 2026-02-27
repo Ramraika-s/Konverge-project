@@ -87,10 +87,10 @@ export function Navbar() {
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             ) : !user ? (
               <>
-                <Link href="/auth">
+                <Link href="/auth#login">
                   <Button variant="ghost" className="text-sm font-medium">Log In</Button>
                 </Link>
-                <Link href="/auth">
+                <Link href="/auth#signup">
                   <Button className="text-sm font-bold gold-border-glow">Sign Up</Button>
                 </Link>
               </>
@@ -162,7 +162,7 @@ export function Navbar() {
                   )}
                   <hr className="border-white/5" />
                   {!user ? (
-                    <Link href="/auth">
+                    <Link href="/auth#signup">
                       <Button className="w-full h-14 font-black gold-border-glow text-lg">Get Started</Button>
                     </Link>
                   ) : (

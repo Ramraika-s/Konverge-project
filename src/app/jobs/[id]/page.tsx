@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useUser } from '@/firebase';
 
 // Mock Data for demonstration
 const MOCK_JOBS = [
@@ -76,7 +78,17 @@ const MOCK_JOBS = [
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useUser();
   const job = MOCK_JOBS.find(j => j.id === params.id) || MOCK_JOBS[0];
+
+  const handleApply = () => {
+    if (!user) {
+      router.push('/auth#signup');
+    } else {
+      // In a real app, this would trigger the application flow
+      router.push('/dashboard/job-seeker');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -232,7 +244,11 @@ export default function JobDetailPage() {
             <h4 className="text-lg font-black">{job.title}</h4>
           </div>
           <div className="flex flex-1 md:flex-none items-center gap-4">
-            <Button size="lg" className="flex-1 md:w-[300px] h-14 text-lg font-black gold-border-glow rounded-2xl">
+            <Button 
+              size="lg" 
+              className="flex-1 md:w-[300px] h-14 text-lg font-black gold-border-glow rounded-2xl"
+              onClick={handleApply}
+            >
               Apply Now
             </Button>
           </div>

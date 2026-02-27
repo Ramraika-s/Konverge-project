@@ -28,11 +28,21 @@ export default function AuthPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const [activeTab, setActiveTab] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isEmployer, setIsEmployer] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Handle hash for initial tab state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash === '#signup') setActiveTab('signup');
+      if (hash === '#login') setActiveTab('login');
+    }
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -62,7 +72,7 @@ export default function AuthPage() {
         await createUserWithEmailAndPassword(auth, email, password);
         toast({
           title: "Account created!",
-          description: `Welcome to Konnex as a ${isEmployer ? 'Employer' : 'Student'}.`,
+          description: `Welcome to Konnex as a ${isEmployer ? 'Employer' : 'Job-Seeker'}.`,
         });
       }
       router.push('/dashboard');
@@ -132,7 +142,7 @@ export default function AuthPage() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to home
         </Link>
         
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary/50 p-1 rounded-xl">
             <TabsTrigger value="login" className="font-bold rounded-lg data-[state=active]:bg-background transition-all">Log In</TabsTrigger>
             <TabsTrigger value="signup" className="font-bold rounded-lg data-[state=active]:bg-background transition-all">Sign Up</TabsTrigger>

@@ -18,7 +18,6 @@ export default function Home() {
     let i = 0;
     let phase = 1; // 1: typing 1st, 2: deleting, 3: typing 2nd
 
-    // Base interval for the first phase
     const typingInterval = setInterval(() => {
       if (phase === 1) {
         setDisplayText(firstText.slice(0, i));
@@ -28,10 +27,10 @@ export default function Home() {
           setTimeout(() => {
             phase = 2;
             startNextPhase();
-          }, 2000); // Increased pause before deleting
+          }, 2000);
         }
       }
-    }, 45); // Slowed from 30ms
+    }, 45);
 
     const startNextPhase = () => {
       const nextInterval = setInterval(() => {
@@ -44,7 +43,7 @@ export default function Home() {
               phase = 3;
               i = 0;
               startNextPhase();
-            }, 800); // Increased pause before typing second line
+            }, 800);
           }
         } else if (phase === 3) {
           setDisplayText(secondText.slice(0, i));
@@ -54,7 +53,7 @@ export default function Home() {
             setShowCursor(false);
           }
         }
-      }, phase === 2 ? 25 : 60); // Slowed from 15ms/40ms
+      }, phase === 2 ? 25 : 60);
     };
 
     return () => clearInterval(typingInterval);
@@ -95,7 +94,7 @@ export default function Home() {
                 Explore Jobs <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <Link href="/auth">
+            <Link href="/auth#signup">
               <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold border-white/10 hover:bg-white/5">
                 Join as Employer
               </Button>
@@ -130,7 +129,7 @@ export default function Home() {
                   Personalized discovery with deadline & stipend insights
                 </li>
               </ul>
-              <Link href="/auth">
+              <Link href="/auth#signup">
                 <Button variant="secondary" className="w-full sm:w-auto">Start Your Career</Button>
               </Link>
             </div>
@@ -150,7 +149,7 @@ export default function Home() {
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Applicant management system</li>
                 <li className="flex items-center gap-3 text-sm"><ShieldCheck className="w-4 h-4 text-primary" /> Collaborative hiring tools</li>
               </ul>
-              <Link href="/auth">
+              <Link href="/auth#signup">
                 <Button variant="secondary" className="w-full sm:w-auto">Post a Vacancy</Button>
               </Link>
             </div>
