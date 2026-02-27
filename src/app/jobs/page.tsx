@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 // Data Structures
 const ROLE_CATEGORIES = [
@@ -81,7 +82,8 @@ const MOCK_JOBS = [
     tags: ['React', 'TypeScript', 'Tailwind'],
     isVerified: true,
     applicants: 48,
-    category: 'Engineering'
+    category: 'Engineering',
+    logoSeed: 'nexustech-logo'
   },
   {
     id: '2',
@@ -98,7 +100,8 @@ const MOCK_JOBS = [
     tags: ['Figma', 'UI/UX', 'Prototyping'],
     isVerified: true,
     applicants: 12,
-    category: 'Design'
+    category: 'Design',
+    logoSeed: 'creativeflow-logo'
   },
   {
     id: '3',
@@ -115,7 +118,8 @@ const MOCK_JOBS = [
     tags: ['Node.js', 'PostgreSQL', 'Security'],
     isVerified: false,
     applicants: 156,
-    category: 'Engineering'
+    category: 'Engineering',
+    logoSeed: 'finguard-logo'
   },
   {
     id: '4',
@@ -133,7 +137,8 @@ const MOCK_JOBS = [
     tags: ['Python', 'SQL', 'Pandas'],
     isVerified: true,
     applicants: 8,
-    category: 'Engineering'
+    category: 'Engineering',
+    logoSeed: 'insightsai-logo'
   },
   {
     id: '5',
@@ -150,7 +155,8 @@ const MOCK_JOBS = [
     tags: ['CRM', 'Analysis', 'Strategy'],
     isVerified: true,
     applicants: 24,
-    category: 'Business'
+    category: 'Business',
+    logoSeed: 'scaleup-logo'
   }
 ];
 
@@ -163,12 +169,12 @@ export default function JobsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
 
-  // Filter categories based on category search
   const filteredCategories = useMemo(() => {
     if (!categorySearch) return ROLE_CATEGORIES;
+    const lowerSearch = categorySearch.toLowerCase();
     return ROLE_CATEGORIES.filter(cat => 
-      cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
-      cat.subcategories.some(sub => sub.toLowerCase().includes(categorySearch.toLowerCase()))
+      cat.name.toLowerCase().includes(lowerSearch) ||
+      cat.subcategories.some(sub => sub.toLowerCase().includes(lowerSearch))
     );
   }, [categorySearch]);
 
@@ -192,10 +198,13 @@ export default function JobsPage() {
     );
   };
 
+  const getLogo = (seedId: string) => {
+    return PlaceHolderImages.find(img => img.id === seedId)?.imageUrl || `https://picsum.photos/seed/${seedId}/100/100`;
+  };
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-10">
-        {/* Search Header */}
         <div className="max-w-4xl space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
           <div>
             <h1 className="text-5xl font-black mb-4 tracking-tight leading-tight">
@@ -239,7 +248,7 @@ export default function JobsPage() {
               {['Remote', 'On-site', 'Hybrid'].map(mode => (
                 <Badge 
                   key={mode}
-                  variant={selectedWorkMode.includes(mode) ? 'default' : 'outline-solid'}
+                  variant={selectedWorkMode.includes(mode) ? 'default' : 'outline'}
                   className={`cursor-pointer px-4 py-1.5 rounded-full text-xs font-bold transition-all border-white/10 ${
                     selectedWorkMode.includes(mode) ? 'bg-primary text-primary-foreground' : 'hover:bg-white/5'
                   }`}
@@ -254,7 +263,6 @@ export default function JobsPage() {
         </div>
 
         <div className="grid lg:grid-cols-[320px_1fr] gap-10">
-          {/* Filters Sidebar */}
           <aside className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
             <div className="glass-card rounded-3xl p-6 border-white/5 shadow-xl space-y-8">
               <div className="flex items-center justify-between">
@@ -270,7 +278,6 @@ export default function JobsPage() {
                 }}>Reset</Button>
               </div>
 
-              {/* Role Categories */}
               <div className="space-y-4">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Specializations</Label>
                 <div className="relative">
@@ -286,12 +293,12 @@ export default function JobsPage() {
                 <Accordion type="multiple" className="w-full">
                   {filteredCategories.map((cat) => (
                     <AccordionItem key={cat.id} value={cat.id} className="border-white/5">
-                      <div className="flex items-center gap-2 w-full pr-2">
+                      <div className="flex items-center gap-2 w-full pr-2 group">
                         <Checkbox 
                           id={`cat-${cat.id}`} 
                           checked={selectedCategories.includes(cat.name)}
                           onCheckedChange={() => toggleCategory(cat.name)}
-                          className="z-10"
+                          className="z-10 translate-y-0.5"
                         />
                         <AccordionTrigger className="flex-1 hover:no-underline py-3">
                           <span className="text-sm font-bold text-left">{cat.name}</span>
@@ -318,7 +325,6 @@ export default function JobsPage() {
                 </Accordion>
               </div>
 
-              {/* Dynamic Salary */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Min Stipend/Salary</Label>
@@ -337,7 +343,6 @@ export default function JobsPage() {
                 </div>
               </div>
 
-              {/* Job Type */}
               <div className="space-y-4">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Commitment</Label>
                 <div className="grid grid-cols-1 gap-3">
@@ -352,7 +357,6 @@ export default function JobsPage() {
             </div>
           </aside>
 
-          {/* Jobs List */}
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-muted-foreground">
@@ -372,8 +376,7 @@ export default function JobsPage() {
 
             <div className="grid gap-6">
               {MOCK_JOBS.map((job) => (
-                <Card key={job.id} className="glass-card hover:border-primary/40 transition-all duration-500 group relative overflow-hidden">
-                  {/* Verified Indicator Overlay */}
+                <Card key={job.id} className="glass-card hover:border-primary/40 transition-all duration-500 group relative overflow-hidden rounded-4xl">
                   {job.isVerified && (
                     <div className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 bg-primary/10 rotate-45 flex items-end justify-center pb-2 pointer-events-none">
                        <CheckCircle2 className="w-4 h-4 text-primary -rotate-45" />
@@ -384,7 +387,7 @@ export default function JobsPage() {
                     <div className="flex gap-6">
                       <div className="w-16 h-16 rounded-2xl bg-secondary/80 flex items-center justify-center border border-white/10 overflow-hidden shadow-inner group-hover:scale-105 transition-transform duration-500">
                         <Image 
-                          src={`https://picsum.photos/seed/${job.company}/100/100`}
+                          src={getLogo(job.logoSeed)}
                           alt={job.company}
                           width={64}
                           height={64}

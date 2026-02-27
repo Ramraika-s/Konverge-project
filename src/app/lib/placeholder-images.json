@@ -14,10 +14,34 @@
       "imageHint": "person portrait"
     },
     {
-      "id": "employer-logo",
-      "description": "Tech company logo",
-      "imageUrl": "https://picsum.photos/seed/corp1/200/200",
-      "imageHint": "abstract logo"
+      "id": "nexustech-logo",
+      "description": "NexusTech Company Logo",
+      "imageUrl": "https://picsum.photos/seed/NexusTech/200/200",
+      "imageHint": "tech logo"
+    },
+    {
+      "id": "creativeflow-logo",
+      "description": "CreativeFlow Company Logo",
+      "imageUrl": "https://picsum.photos/seed/CreativeFlow/200/200",
+      "imageHint": "design logo"
+    },
+    {
+      "id": "finguard-logo",
+      "description": "FinGuard Company Logo",
+      "imageUrl": "https://picsum.photos/seed/FinGuard/200/200",
+      "imageHint": "finance logo"
+    },
+    {
+      "id": "insightsai-logo",
+      "description": "InsightsAI Company Logo",
+      "imageUrl": "https://picsum.photos/seed/InsightsAI/200/200",
+      "imageHint": "ai logo"
+    },
+    {
+      "id": "scaleup-logo",
+      "description": "ScaleUp Company Logo",
+      "imageUrl": "https://picsum.photos/seed/ScaleUp/200/200",
+      "imageHint": "business logo"
     }
   ]
 }
