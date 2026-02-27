@@ -26,10 +26,10 @@ export default function Home() {
             The Future of Talent Acquisition
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight max-w-4xl mx-auto font-headline">
-            Where Ambition Meets <span className="text-primary italic gold-glow">Opportunity.</span>
+            Stop Hunting Opportunities. <span className="text-primary italic gold-glow">Start Discovering Them.</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            Konnex bridges the gap between top-tier student talent and the world's most innovative employers through a premium, data-driven experience.
+            We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for students.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/jobs">
@@ -54,7 +54,7 @@ export default function Home() {
               <GraduationCap className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold mb-4">For Students</h2>
+              <h2 className="text-3xl font-bold mb-4">For Job Seekers</h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
                 Build your professional identity, showcase your skills, and get discovered by companies that value potential and innovation.
               </p>

@@ -36,12 +36,12 @@ export function Footer() {
             </div>
           </div>
 
-          {/* For Students */}
+          {/* For Job Seekers */}
           <div>
-            <h4 className="text-sm font-bold uppercase tracking-widest text-primary mb-6">For Students</h4>
+            <h4 className="text-sm font-bold uppercase tracking-widest text-primary mb-6">For Job Seekers</h4>
             <ul className="space-y-4">
               <li><Link href="/jobs" className="text-sm text-muted-foreground hover:text-white transition-colors">Browse Jobs</Link></li>
-              <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-white transition-colors">Student Dashboard</Link></li>
+              <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-white transition-colors">Job Seeker Dashboard</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Career Resources</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">Resume Builder</Link></li>
             </ul>
