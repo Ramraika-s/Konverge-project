@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -50,4 +49,22 @@
 
 .gold-border-glow:focus {
   box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+}
+
+@keyframes title-color-1 {
+  0%, 100% { color: white; }
+  50% { color: hsl(var(--primary)); }
+}
+
+@keyframes title-color-2 {
+  0%, 100% { color: hsl(var(--primary)); }
+  50% { color: white; }
+}
+
+.animate-title-1 {
+  animation: title-color-1 4s infinite ease-in-out;
+}
+
+.animate-title-2 {
+  animation: title-color-2 4s infinite ease-in-out;
 }
