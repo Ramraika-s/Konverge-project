@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -23,6 +23,7 @@ export default function AuthPage() {
 
   const [activeTab, setActiveTab] = useState('login');
   const [isLoading, setIsLoading] = useState(false);
+  const isCheckingRedirect = useRef(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -32,35 +33,42 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Handle the result of the Google Redirect
+  // Handle the result of the Google Redirect with a strict lock
   useEffect(() => {
     const checkRedirectResult = async () => {
-      if (!auth) return; 
+      // If auth isn't ready, OR if we are already checking, stop immediately.
+      if (!auth || isCheckingRedirect.current) return; 
       
+      isCheckingRedirect.current = true; // Lock the function
+
       try {
         const result = await getRedirectResult(auth);
+        
         if (result?.user) {
           toast({
             title: "Signed in with Google",
             description: "Successfully authenticated.",
           });
-          router.push('/dashboard');
+          // Redirection to dashboard is handled by the user watcher below
         }
       } catch (err: any) {
-        // Only show error if it's not the initial load or a known non-error state
-        if (err.code !== 'auth/no-auth-event') {
+        // Only show error if it's not a known non-error state
+        if (err.code !== 'auth/no-auth-event' && err.code !== 'auth/operation-not-supported-in-this-environment') {
           toast({
             variant: "destructive",
             title: "Google Auth Failed",
             description: err.message || 'An error occurred during Google authentication.',
           });
         }
+      } finally {
+        isCheckingRedirect.current = false;
       }
     };
 
     checkRedirectResult();
-  }, [auth, router, toast]);
+  }, [auth, toast]);
 
+  // Main user watcher for redirection
   useEffect(() => {
     if (user && !isUserLoading && !isLoading) {
       router.push('/dashboard');
