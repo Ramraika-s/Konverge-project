@@ -13,11 +13,12 @@ export default function Home() {
   
   useEffect(() => {
     const firstText = "We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for job seekers.";
-    const secondText = "Never Miss an Opportunity Again";
+    const secondText = "Never Miss an Opportunity Again.";
     
     let i = 0;
     let phase = 1; // 1: typing 1st, 2: deleting, 3: typing 2nd
 
+    // Base interval for the first phase
     const typingInterval = setInterval(() => {
       if (phase === 1) {
         setDisplayText(firstText.slice(0, i));
@@ -27,28 +28,10 @@ export default function Home() {
           setTimeout(() => {
             phase = 2;
             startNextPhase();
-          }, 1500);
-        }
-      } else if (phase === 2) {
-        setDisplayText(firstText.slice(0, i));
-        i--;
-        if (i < 0) {
-          clearInterval(typingInterval);
-          setTimeout(() => {
-            phase = 3;
-            i = 0;
-            startNextPhase();
-          }, 500);
-        }
-      } else if (phase === 3) {
-        setDisplayText(secondText.slice(0, i));
-        i++;
-        if (i > secondText.length) {
-          clearInterval(typingInterval);
-          setShowCursor(false);
+          }, 2000); // Increased pause before deleting
         }
       }
-    }, 30);
+    }, 45); // Slowed from 30ms
 
     const startNextPhase = () => {
       const nextInterval = setInterval(() => {
@@ -61,7 +44,7 @@ export default function Home() {
               phase = 3;
               i = 0;
               startNextPhase();
-            }, 500);
+            }, 800); // Increased pause before typing second line
           }
         } else if (phase === 3) {
           setDisplayText(secondText.slice(0, i));
@@ -71,7 +54,7 @@ export default function Home() {
             setShowCursor(false);
           }
         }
-      }, phase === 2 ? 15 : 40);
+      }, phase === 2 ? 25 : 60); // Slowed from 15ms/40ms
     };
 
     return () => clearInterval(typingInterval);
@@ -100,7 +83,7 @@ export default function Home() {
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight max-w-4xl mx-auto font-headline flex flex-col gap-2">
             <span>Stop Hunting Opportunities.</span>
-            <span className="italic gold-glow text-primary">Start Discovering Them.</span>
+            <span className="italic text-primary">Start Discovering Them.</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed min-h-[3.5em]">
             {displayText}
