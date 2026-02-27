@@ -65,15 +65,15 @@ export function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <span>Loc: Bhubaneshwar, India</span>
+                <span>Bhubaneshwar, India</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span>Contact No.: 1800-DUMMYNUMBER</span>
+                <span>1800-DUMMYNUMBER</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span>Email: helpdesk@thenullpointers.com</span>
+                <span>helpdesk@thenullpointers.com</span>
               </li>
             </ul>
           </div>
