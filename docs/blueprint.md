@@ -2,11 +2,11 @@
 
 ## Core Features:
 
-- User Authentication & Authorization: Secure sign-up, login, and distinct access controls for students and employers.
-- Job Listing & Posting: Employers can easily create, publish, and manage job listings with full details. Students can view available job listings.
-- Job Search & Filtering: Students can search for jobs and apply filters based on role, location, remote options, and stipend.
-- Application Management & Tracking: Students can submit applications and track their status; Employers can review, accept, or reject incoming applications.
-- Dynamic Dashboards: Personalized dashboards for students to track application statuses and for employers to manage postings and applicants.
+- User Authentication & Authorization: Secure sign-up, login, and distinct access controls for job-seekers and employers.
+- Job Listing & Posting: Employers can easily create, publish, and manage job listings with full details. job-seekers can view available job listings.
+- Job Search & Filtering: job-seekers can search for jobs and apply filters based on role, location, remote options, and stipend.
+- Application Management & Tracking: job-seekers can submit applications and track their status; Employers can review, accept, or reject incoming applications.
+- Dynamic Dashboards: Personalized dashboards for job-seekers to track application statuses and for employers to manage postings and applicants.
 - Responsive UI with Empty States: Ensures the application is fully responsive across desktop, tablet, and mobile, with user-friendly empty states for clarity.
 
 ## Style Guidelines:
