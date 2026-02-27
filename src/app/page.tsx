@@ -26,8 +26,8 @@ export default function Home() {
             The Future of Talent Acquisition
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight max-w-4xl mx-auto font-headline flex flex-col gap-2">
-            <span className="animate-title-1">Stop Hunting Opportunities.</span>
-            <span className="animate-title-2 italic gold-glow">Start Discovering Them.</span>
+            <span>Stop Hunting Opportunities.</span>
+            <span className="italic gold-glow text-primary">Start Discovering Them.</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
             We gather fragmented listings from multiple sources, normalize the data, and deliver a single reliable opportunity stream built for students.
