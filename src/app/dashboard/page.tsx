@@ -3,25 +3,51 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Loader2, Briefcase, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { doc } from 'firebase/firestore';
 
 /**
- * @fileOverview Central dashboard selector page.
- * Allows users to choose between Job Seeker and Employer views.
+ * @fileOverview Central dashboard router.
+ * Automatically redirects users to their specific hub if a profile exists.
  */
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const router = useRouter();
+
+  // Check for Job Seeker Profile
+  const jobSeekerRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'jobseekerProfile', user.uid);
+  }, [db, user]);
+  const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
+
+  // Check for Employer Profile
+  const employerRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'employerProfiles', user.uid);
+  }, [db, user]);
+  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/auth');
+      return;
     }
-  }, [user, isUserLoading, router]);
 
-  if (isUserLoading) {
+    // Role-based automatic routing if profiles are loaded
+    if (jobSeekerProfile) {
+      router.replace('/dashboard/job-seeker');
+    } else if (employerProfile) {
+      router.replace('/dashboard/employer');
+    }
+  }, [user, isUserLoading, jobSeekerProfile, employerProfile, router]);
+
+  const isGlobalLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
+
+  if (isGlobalLoading) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -31,6 +57,7 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
+  // If no profile exists yet (e.g. fresh Google Auth), show the selection hub
   return (
     <div className="container mx-auto px-4 py-24">
       <div className="max-w-2xl mx-auto text-center space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">

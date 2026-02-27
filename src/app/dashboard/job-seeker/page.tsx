@@ -3,24 +3,40 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { StudentDashboard } from '@/components/dashboard/StudentDashboard';
 import { Loader2 } from 'lucide-react';
+import { doc } from 'firebase/firestore';
 
 /**
  * @fileOverview Dashboard page specifically for Job Seekers.
+ * Includes role-based access control.
  */
 export default function JobSeekerDashboardPage() {
   const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const router = useRouter();
+
+  // Guard: Check if user has an employer profile
+  const employerRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'employerProfiles', user.uid);
+  }, [db, user]);
+  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/auth');
+      return;
     }
-  }, [user, isUserLoading, router]);
 
-  if (isUserLoading) {
+    // Role Guard: If user is actually an employer, redirect them
+    if (!isEmployerLoading && employerProfile) {
+      router.replace('/dashboard/employer');
+    }
+  }, [user, isUserLoading, employerProfile, isEmployerLoading, router]);
+
+  if (isUserLoading || isEmployerLoading) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -28,7 +44,7 @@ export default function JobSeekerDashboardPage() {
     );
   }
 
-  if (!user) return null;
+  if (!user || employerProfile) return null;
 
   return (
     <div className="container mx-auto px-4 py-12">

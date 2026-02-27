@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -113,7 +114,13 @@ export function SignUpForm() {
         title: "Account created!",
         description: `Welcome to Konnex as an ${isEmployer ? 'Employer' : 'Job-Seeker'}.`,
       });
-      router.push('/dashboard');
+
+      // Role-based redirection
+      if (isEmployer) {
+        router.push('/dashboard/employer');
+      } else {
+        router.push('/dashboard/job-seeker');
+      }
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration.');
       setIsLoading(false);
