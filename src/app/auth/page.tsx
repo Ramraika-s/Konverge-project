@@ -20,9 +20,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { Briefcase, ArrowLeft, Loader2, AlertCircle, User, Building2, Phone, MapPin, Globe, Sparkles, FileText } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function AuthPage() {
   const auth = useAuth();
@@ -38,7 +40,24 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle hash for initial tab state
+  // Student Fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [skills, setSkills] = useState('');
+  const [educationSummary, setEducationSummary] = useState('');
+  const [preferredRoles, setPreferredRoles] = useState('');
+  const [preferredLocations, setPreferredLocations] = useState('');
+  const [isRemotePreferred, setIsRemotePreferred] = useState(true);
+  const [resumeUrl, setResumeUrl] = useState('');
+
+  // Employer Fields
+  const [companyName, setCompanyName] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [companyDescription, setCompanyDescription] = useState('');
+  const [contactPersonName, setContactPersonName] = useState('');
+  const [companyLocation, setCompanyLocation] = useState('');
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
@@ -47,7 +66,6 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user && !isUserLoading) {
       router.push('/dashboard');
@@ -57,7 +75,7 @@ export default function AuthPage() {
   const handleEmailAuth = async (type: 'login' | 'signup') => {
     if (!auth || !db) return;
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError('Please fill in your credentials.');
       return;
     }
     
@@ -72,52 +90,62 @@ export default function AuthPage() {
           description: "Successfully signed in.",
         });
       } else {
+        // Basic validation for required fields
+        if (isEmployer) {
+          if (!companyName || !companyWebsite || !contactPersonName || !companyLocation) {
+             throw new Error("Please fill in all required company fields.");
+          }
+        } else {
+          if (!firstName || !lastName || !contactNumber || !educationSummary) {
+             throw new Error("Please fill in all required personal fields.");
+          }
+        }
+
         const result = await createUserWithEmailAndPassword(auth, email, password);
         
-        // Create Initial Profile Document based on backend.json entities
         const profileRef = doc(db, isEmployer ? 'employerProfiles' : 'studentProfiles', result.user.uid);
+        
         const profileData = isEmployer ? {
           id: result.user.uid,
-          companyName: email.split('@')[0], // Placeholder
-          companyWebsite: "https://example.com",
-          companyDescription: "Leading innovation in the industry.",
-          contactPersonName: result.user.displayName || "Company Representative",
+          companyName,
+          companyWebsite,
+          companyDescription: companyDescription || "Leading innovation in the industry.",
+          contactPersonName,
           contactEmail: result.user.email,
-          contactNumber: "000-000-0000",
-          companyLocation: "Remote",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
+          contactNumber: contactNumber || "000-000-0000",
+          companyLocation,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         } : {
           id: result.user.uid,
-          firstName: "New",
-          lastName: "User",
+          firstName,
+          lastName,
           email: result.user.email,
-          contactNumber: "000-000-0000",
-          educationSummary: "Currently seeking opportunities.",
-          skills: [],
-          resumeUrl: "",
-          preferredRoles: [],
-          preferredLocations: [],
-          isRemotePreferred: true,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
+          contactNumber,
+          educationSummary,
+          skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
+          resumeUrl: resumeUrl || `https://example.com/resumes/${result.user.uid}`,
+          preferredRoles: preferredRoles.split(',').map(s => s.trim()).filter(s => s !== ''),
+          preferredLocations: preferredLocations.split(',').map(s => s.trim()).filter(s => s !== ''),
+          isRemotePreferred,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         setDocumentNonBlocking(profileRef, profileData, { merge: true });
 
         toast({
           title: "Account created!",
-          description: `Welcome to Konnex as a ${isEmployer ? 'Employer' : 'Job-Seeker'}.`,
+          description: `Welcome to Konnex as an ${isEmployer ? 'Employer' : 'Job-Seeker'}.`,
         });
       }
       router.push('/dashboard');
     } catch (err: any) {
-      let message = 'An error occurred during authentication.';
+      let message = err.message || 'An error occurred during authentication.';
       if (err.code === 'auth/user-not-found') message = 'No account found with this email.';
       if (err.code === 'auth/wrong-password') message = 'Incorrect password.';
       if (err.code === 'auth/email-already-in-use') message = 'This email is already registered.';
       if (err.code === 'auth/weak-password') message = 'Password should be at least 6 characters.';
-      if (err.code === 'auth/invalid-email') message = 'Invalid email address.';
       
       setError(message);
       setIsLoading(false);
@@ -143,23 +171,6 @@ export default function AuthPage() {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError('Please enter your email address first.');
-      return;
-    }
-    if (!auth) return;
-    try {
-      await sendPasswordResetEmail(auth, email);
-      toast({
-        title: "Reset link sent",
-        description: "Check your email for instructions.",
-      });
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -172,7 +183,7 @@ export default function AuthPage() {
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-background">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-lg relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8 group font-bold">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to home
         </Link>
@@ -200,54 +211,147 @@ export default function AuthPage() {
                 </Alert>
               )}
 
-              <TabsContent value="signup" className="mt-0 space-y-6">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-bold">Register as Employer</Label>
-                    <p className="text-[10px] text-muted-foreground">Hire top talent</p>
-                  </div>
-                  <Switch 
-                    checked={isEmployer} 
-                    onCheckedChange={setIsEmployer}
-                  />
-                </div>
-              </TabsContent>
+              <ScrollArea className={activeTab === 'signup' ? "max-h-[500px] pr-4" : ""}>
+                <div className="space-y-6">
+                  {activeTab === 'signup' && (
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-bold flex items-center gap-2">
+                          {isEmployer ? <Building2 className="w-4 h-4 text-primary" /> : <User className="w-4 h-4 text-primary" />}
+                          Register as {isEmployer ? 'Employer' : 'Job-Seeker'}
+                        </Label>
+                        <p className="text-[10px] text-muted-foreground">{isEmployer ? 'Hire top talent' : 'Find your next career move'}</p>
+                      </div>
+                      <Switch 
+                        checked={isEmployer} 
+                        onCheckedChange={setIsEmployer}
+                      />
+                    </div>
+                  )}
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 bg-white/5 border-white/10 rounded-xl" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
-                    <button 
-                      onClick={handleForgotPassword}
-                      className="text-[10px] font-bold text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </button>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          placeholder="name@example.com" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="h-12 bg-white/5 border-white/10 rounded-xl" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
+                        <Input 
+                          id="password" 
+                          type="password" 
+                          placeholder="••••••••" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="h-12 bg-white/5 border-white/10 rounded-xl" 
+                        />
+                      </div>
+                    </div>
+
+                    {activeTab === 'signup' && !isEmployer && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
+                              <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name</Label>
+                              <Input placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                              <Phone className="w-3 h-3" /> Contact Number
+                            </Label>
+                            <Input placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10" />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                              <FileText className="w-3 h-3" /> Education Summary
+                            </Label>
+                            <Textarea placeholder="E.g. Computer Science Senior at University of Technology" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px]" />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                              <Sparkles className="w-3 h-3" /> Skills (comma separated)
+                            </Label>
+                            <Input placeholder="React, TypeScript, UI Design" value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10" />
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Roles</Label>
+                              <Input placeholder="Frontend, Backend" value={preferredRoles} onChange={(e) => setPreferredRoles(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Locations</Label>
+                              <Input placeholder="New York, London" value={preferredLocations} onChange={(e) => setPreferredLocations(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                         </div>
+                         <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                            <Label className="text-sm font-bold">Remote Preferred</Label>
+                            <Switch checked={isRemotePreferred} onCheckedChange={setIsRemotePreferred} />
+                         </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'signup' && isEmployer && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                              <Building2 className="w-3 h-3" /> Company Name
+                            </Label>
+                            <Input placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10" />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                              <Globe className="w-3 h-3" /> Company Website
+                            </Label>
+                            <Input placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10" />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Short Description</Label>
+                            <Textarea placeholder="Tell us about your company..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px]" />
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
+                              <Input placeholder="Jane Smith" value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Role</Label>
+                              <Input placeholder="HR Manager" className="bg-white/5 border-white/10" />
+                            </div>
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <Phone className="w-3 h-3" /> Contact No
+                              </Label>
+                              <Input placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <MapPin className="w-3 h-3" /> Location
+                              </Label>
+                              <Input placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10" />
+                            </div>
+                         </div>
+                      </div>
+                    )}
                   </div>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 bg-white/5 border-white/10 rounded-xl" 
-                  />
                 </div>
-              </div>
+              </ScrollArea>
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 pt-2">
+            <CardFooter className="flex flex-col gap-4 pt-4 border-t border-white/5">
               <TabsContent value="login" className="w-full mt-0">
                 <Button 
                   onClick={() => handleEmailAuth('login')} 
@@ -263,7 +367,7 @@ export default function AuthPage() {
                   disabled={isLoading}
                   className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground"
                 >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Create ${isEmployer ? 'Employer' : 'Job-Seeker'} Account`}
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Complete ${isEmployer ? 'Employer' : 'Seeker'} Setup`}
                 </Button>
               </TabsContent>
 
@@ -272,7 +376,7 @@ export default function AuthPage() {
                   <span className="w-full border-t border-white/10" />
                 </div>
                 <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">Or</span>
                 </div>
               </div>
 
