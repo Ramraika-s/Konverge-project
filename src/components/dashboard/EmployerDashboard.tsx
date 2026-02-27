@@ -1,6 +1,7 @@
 
 "use client";
 
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,9 +32,11 @@ export function EmployerDashboard() {
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Overview</h2>
-        <Button className="gap-2 gold-border-glow">
-          <Plus className="w-4 h-4" /> Post a Job
-        </Button>
+        <Link href="/employer/post-job">
+          <Button className="gap-2 gold-border-glow">
+            <Plus className="w-4 h-4" /> Post a Job
+          </Button>
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
