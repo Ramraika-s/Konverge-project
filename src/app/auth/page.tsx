@@ -218,7 +218,7 @@ export default function AuthPage() {
                   disabled={isLoading}
                   className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground"
                 >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Create ${isEmployer ? 'Employer' : 'Student'} Account`}
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Create ${isEmployer ? 'Employer' : 'Job-Seeker'} Account`}
                 </Button>
               </TabsContent>
 
