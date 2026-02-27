@@ -123,17 +123,17 @@ export function SignUpForm() {
   };
 
   return (
-    <form onSubmit={handleSignUp} className="space-y-6">
+    <form onSubmit={handleSignUp} className="flex flex-col h-full">
       {error && (
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-4">
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-xs font-bold">{error}</AlertDescription>
         </Alert>
       )}
 
-      <ScrollArea className="max-h-[500px] w-full rounded-md">
-        <div className="space-y-6 pb-6 px-1">
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all mx-0.5">
+      <ScrollArea className="flex-grow max-h-[480px] w-full rounded-md pr-4">
+        <div className="space-y-8 pb-10 px-1">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all mx-1">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold flex items-center gap-2">
                 {isEmployer ? <Building2 className="w-4 h-4 text-primary" /> : <User className="w-4 h-4 text-primary" />}
@@ -147,7 +147,7 @@ export function SignUpForm() {
             />
           </div>
 
-          <div className="space-y-4 px-0.5">
+          <div className="space-y-6 px-1">
             <div className="space-y-2">
               <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
               <Input 
@@ -172,7 +172,7 @@ export function SignUpForm() {
             </div>
 
             {!isEmployer ? (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 pt-4">
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
@@ -193,7 +193,7 @@ export function SignUpForm() {
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <FileText className="w-3 h-3" /> Education Summary
                   </Label>
-                  <Textarea placeholder="E.g. Computer Science Senior" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px] rounded-xl focus:border-primary/50" />
+                  <Textarea placeholder="E.g. Computer Science Senior" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl focus:border-primary/50 leading-relaxed" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -211,13 +211,13 @@ export function SignUpForm() {
                     <Input placeholder="New York, London" value={preferredLocations} onChange={(e) => setPreferredLocations(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 mx-1">
                   <Label className="text-sm font-bold">Remote Preferred</Label>
                   <Switch checked={isRemotePreferred} onCheckedChange={setIsRemotePreferred} />
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 pt-4">
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Building2 className="w-3 h-3" /> Company Name
@@ -232,7 +232,7 @@ export function SignUpForm() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Short Description</Label>
-                  <Textarea placeholder="Tell us about your company..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[80px] rounded-xl focus:border-primary/50" />
+                  <Textarea placeholder="Tell us about your company..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl focus:border-primary/50 leading-relaxed" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -252,15 +252,23 @@ export function SignUpForm() {
         </div>
       </ScrollArea>
 
-      <div className="pt-2">
+      <div className="pt-8 pb-4 border-t border-white/5 bg-card/50 backdrop-blur-sm -mx-8 px-8 mt-4 rounded-b-3xl">
         <Button 
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 font-bold gold-border-glow rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+          className="w-full h-14 font-black text-lg gold-border-glow rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Complete ${isEmployer ? 'Employer' : 'Seeker'} Setup`}
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Creating Account...</span>
+            </div>
+          ) : (
+            `Complete ${isEmployer ? 'Employer' : 'Seeker'} Setup`
+          )}
         </Button>
       </div>
     </form>
   );
 }
+
