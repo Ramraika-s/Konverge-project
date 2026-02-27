@@ -1,9 +1,9 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyBGLDlHjMvrC8Pk5_-SYzUC8pEP52MrTVc",
-  authDomain: "nexushire-3cb62.firebaseapp.com",
-  projectId: "nexushire-3cb62",
-  storageBucket: "nexushire-3cb62.firebasestorage.app",
-  messagingSenderId: "961668419814",
-  appId: "1:961668419814:web:81048b532ffe58cdbdab27",
-  measurementId: "G-HM3Z4YWNBT"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
