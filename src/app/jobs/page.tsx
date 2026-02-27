@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -86,7 +87,7 @@ export default function JobsPage() {
         {/* Search Header */}
         <div className="max-w-4xl">
           <h1 className="text-4xl font-black mb-4">Find Your Next <span className="text-primary gold-glow">Career Move</span></h1>
-          <p className="text-muted-foreground text-lg mb-8">Browse thousands of opportunities on Konnex from top companies looking for student talent.</p>
+          <p className="text-muted-foreground text-lg mb-8">Browse thousands of opportunities on Konnex from top companies looking for job seeker talent.</p>
           
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow">
@@ -177,11 +178,18 @@ export default function JobsPage() {
 
             <div className="grid gap-4">
               {MOCK_JOBS.map((job) => (
-                <Card key={job.id} className="glass-card hover:border-primary/40 transition-all duration-300 cursor-pointer group">
+                <Card key={job.id} className="glass-card hover:border-primary/40 transition-all duration-300 group">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0">
                     <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center border border-white/5">
-                        <Briefcase className="w-6 h-6 text-primary" />
+                      <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center border border-white/5 overflow-hidden">
+                        <Image 
+                          src={`https://picsum.photos/seed/${job.company}/100/100`}
+                          alt={job.company}
+                          width={48}
+                          height={48}
+                          className="object-cover"
+                          data-ai-hint="company logo"
+                        />
                       </div>
                       <div>
                         <CardTitle className="text-xl mb-1 group-hover:text-primary transition-colors">{job.title}</CardTitle>
@@ -206,9 +214,11 @@ export default function JobsPage() {
                       <span className="flex items-center gap-1 font-bold text-primary"><DollarSign className="w-3 h-3" /> {job.stipend}</span>
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Posted {job.postedAt}</span>
                     </div>
-                    <Button variant="ghost" size="sm" className="group/btn gap-1 text-xs font-bold">
-                      View Details <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
-                    </Button>
+                    <Link href={`/jobs/${job.id}`}>
+                      <Button variant="ghost" size="sm" className="group/btn gap-1 text-xs font-bold">
+                        View Details <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
                   </CardFooter>
                 </Card>
               ))}
