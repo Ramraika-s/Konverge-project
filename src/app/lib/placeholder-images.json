@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-bg",
+      "description": "Modern office space with glowing lights",
+      "imageUrl": "https://picsum.photos/seed/nexus1/1200/800",
+      "imageHint": "modern office"
+    },
+    {
+      "id": "student-avatar",
+      "description": "Professional student headshot",
+      "imageUrl": "https://picsum.photos/seed/student1/200/200",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "employer-logo",
+      "description": "Tech company logo",
+      "imageUrl": "https://picsum.photos/seed/corp1/200/200",
+      "imageHint": "abstract logo"
+    }
+  ]
+}
