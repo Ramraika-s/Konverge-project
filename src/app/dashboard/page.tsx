@@ -9,9 +9,8 @@ import { doc } from 'firebase/firestore';
 import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 
 /**
- * @fileOverview Central dashboard router.
- * If user is authenticated but has no profile (e.g. Google Sign-in),
- * forces them to complete their profile setup.
+ * @fileOverview Central dashboard router with Progressive Profiling.
+ * Checks if a profile exists AND if it's "Complete" (has professional details).
  */
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -38,10 +37,10 @@ export default function DashboardPage() {
       return;
     }
 
-    // Role-based automatic routing if profiles are loaded
-    if (jobSeekerProfile) {
+    // SUCCESS: Profile exists AND is fully populated with professional data
+    if (jobSeekerProfile && jobSeekerProfile.educationSummary) {
       router.replace('/dashboard/job-seeker');
-    } else if (employerProfile) {
+    } else if (employerProfile && employerProfile.companyWebsite) {
       router.replace('/dashboard/employer');
     }
   }, [user, isUserLoading, jobSeekerProfile, employerProfile, router]);
@@ -58,7 +57,7 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  // If no profile exists yet (e.g. fresh Google Auth), show the mandatory setup form
+  // If profile is missing OR incomplete, show the progressive completion form
   return (
     <div className="container mx-auto px-4 py-24">
       <ProfileCompletionForm />

@@ -5,27 +5,26 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc } from 'firebase/firestore';
+import { doc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Loader2, 
   AlertCircle, 
   User, 
-  Building2, 
-  Phone, 
-  MapPin, 
-  Globe, 
-  Sparkles, 
-  FileText 
+  Building2
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * @fileOverview Simplified Sign-Up Form.
+ * Collects only basic info to minimize friction, 
+ * creating a skeleton profile for the dashboard to finish.
+ */
 export function SignUpForm() {
   const auth = useAuth();
   const db = useFirestore();
@@ -34,32 +33,18 @@ export function SignUpForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isEmployer, setIsEmployer] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Job Seeker Fields
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [skills, setSkills] = useState('');
-  const [educationSummary, setEducationSummary] = useState('');
-  const [preferredRoles, setPreferredRoles] = useState('');
-  const [preferredLocations, setPreferredLocations] = useState('');
-  const [isRemotePreferred, setIsRemotePreferred] = useState(true);
-
-  // Employer Fields
-  const [companyName, setCompanyName] = useState('');
-  const [companyWebsite, setCompanyWebsite] = useState('');
-  const [companyDescription, setCompanyDescription] = useState('');
-  const [contactPersonName, setContactPersonName] = useState('');
-  const [companyLocation, setCompanyLocation] = useState('');
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !db) return;
-    if (!email || !password) {
-      setError('Please fill in your credentials.');
+    
+    if (!email || !password || !firstName || !lastName) {
+      setError('Please fill in all required fields.');
       return;
     }
 
@@ -67,29 +52,18 @@ export function SignUpForm() {
     setIsLoading(true);
 
     try {
-      if (isEmployer) {
-        if (!companyName || !companyWebsite || !contactPersonName || !companyLocation) {
-          throw new Error("Please fill in all required company fields.");
-        }
-      } else {
-        if (!firstName || !lastName || !contactNumber || !educationSummary) {
-          throw new Error("Please fill in all required personal fields.");
-        }
-      }
-
+      // 1. Create the Auth User
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
+      // 2. Create a "Skeleton" Profile Document
+      // This allows the Dashboard to identify their role immediately
       const profileRef = doc(db, isEmployer ? 'employerProfiles' : 'jobseekerProfile', result.user.uid);
       
-      const profileData = isEmployer ? {
+      const skeletonData = isEmployer ? {
         id: result.user.uid,
-        companyName,
-        companyWebsite,
-        companyDescription: companyDescription || "Leading innovation in the industry.",
-        contactPersonName,
+        companyName: `${firstName} ${lastName}'s Company`, // Placeholder
+        contactPersonName: `${firstName} ${lastName}`,
         contactEmail: result.user.email,
-        contactNumber: contactNumber || "000-000-0000",
-        companyLocation,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } : {
@@ -97,30 +71,19 @@ export function SignUpForm() {
         firstName,
         lastName,
         email: result.user.email,
-        contactNumber,
-        educationSummary,
-        skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
-        resumeUrl: `https://example.com/resumes/${result.user.uid}`,
-        preferredRoles: preferredRoles.split(',').map(s => s.trim()).filter(s => s !== ''),
-        preferredLocations: preferredLocations.split(',').map(s => s.trim()).filter(s => s !== ''),
-        isRemotePreferred,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      setDocumentNonBlocking(profileRef, profileData, { merge: true });
+      setDocumentNonBlocking(profileRef, skeletonData, { merge: true });
 
       toast({
         title: "Account created!",
-        description: `Welcome to Konnex as an ${isEmployer ? 'Employer' : 'Job-Seeker'}.`,
+        description: "Welcome to Konnex. Let's finish setting up your profile.",
       });
 
-      // Role-based redirection
-      if (isEmployer) {
-        router.push('/dashboard/employer');
-      } else {
-        router.push('/dashboard/job-seeker');
-      }
+      // 3. Redirect to the central dashboard router
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration.');
       setIsLoading(false);
@@ -130,13 +93,13 @@ export function SignUpForm() {
   return (
     <form onSubmit={handleSignUp} className="w-full">
       {error && (
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-4">
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-xs font-bold">{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="space-y-8 pb-6">
+      <div className="space-y-6 pb-6">
         <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-primary/20 shadow-sm transition-all">
           <div className="space-y-0.5">
             <Label className="text-sm font-bold flex items-center gap-2">
@@ -151,123 +114,65 @@ export function SignUpForm() {
           />
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Email Address <span className="text-destructive">*</span>
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              First Name <span className="text-destructive">*</span>
             </Label>
             <Input 
-              id="signup-email" 
-              type="email" 
-              placeholder="name@example.com" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50 transition-colors" 
+              placeholder="John" 
+              value={firstName} 
+              onChange={(e) => setFirstName(e.target.value)} 
+              className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50" 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="signup-password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Password <span className="text-destructive">*</span>
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Last Name <span className="text-destructive">*</span>
             </Label>
             <Input 
-              id="signup-password" 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50 transition-colors" 
+              placeholder="Doe" 
+              value={lastName} 
+              onChange={(e) => setLastName(e.target.value)} 
+              className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50" 
             />
           </div>
+        </div>
 
-          {!isEmployer ? (
-            <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    First Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Last Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Phone className="w-3 h-3" /> Contact Number <span className="text-destructive">*</span>
-                </Label>
-                <Input placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <FileText className="w-3 h-3" /> Education Summary <span className="text-destructive">*</span>
-                </Label>
-                <Textarea placeholder="E.g. Computer Science Senior" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl focus:border-primary/50 leading-relaxed" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Sparkles className="w-3 h-3" /> Skills (comma separated)
-                </Label>
-                <Input placeholder="React, TypeScript, UI Design" value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Roles</Label>
-                  <Input placeholder="Frontend, Backend" value={preferredRoles} onChange={(e) => setPreferredRoles(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Locations</Label>
-                  <Input placeholder="New York, London" value={preferredLocations} onChange={(e) => setPreferredLocations(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-                </div>
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                <Label className="text-sm font-bold">Remote Preferred</Label>
-                <Switch checked={isRemotePreferred} onCheckedChange={setIsRemotePreferred} />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Building2 className="w-3 h-3" /> Company Name <span className="text-destructive">*</span>
-                </Label>
-                <Input placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Globe className="w-3 h-3" /> Company Website <span className="text-destructive">*</span>
-                </Label>
-                <Input placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Short Description</Label>
-                <Textarea placeholder="Tell us about your company..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl focus:border-primary/50 leading-relaxed" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person <span className="text-destructive">*</span></Label>
-                  <Input placeholder="Jane Smith" value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <MapPin className="w-3 h-3" /> Location <span className="text-destructive">*</span>
-                  </Label>
-                  <Input placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl focus:border-primary/50" />
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="space-y-2">
+          <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Email Address <span className="text-destructive">*</span>
+          </Label>
+          <Input 
+            id="signup-email" 
+            type="email" 
+            placeholder="name@example.com" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50" 
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="signup-password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Password <span className="text-destructive">*</span>
+          </Label>
+          <Input 
+            id="signup-password" 
+            type="password" 
+            placeholder="••••••••" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-12 bg-white/5 border-white/10 rounded-xl focus:border-primary/50" 
+          />
         </div>
       </div>
 
-      <div className="pt-6">
+      <div className="pt-2">
         <Button 
           type="submit"
           disabled={isLoading}
-          className="w-full h-14 font-black text-lg gold-border-glow rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full h-14 font-black text-lg gold-border-glow rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all"
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
@@ -275,7 +180,7 @@ export function SignUpForm() {
               <span>Creating Account...</span>
             </div>
           ) : (
-            `Complete ${isEmployer ? 'Employer' : 'Seeker'} Setup`
+            `Join as ${isEmployer ? 'Employer' : 'Seeker'}`
           )}
         </Button>
       </div>
