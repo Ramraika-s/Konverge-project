@@ -8,27 +8,23 @@
   },
   "jobs": [
     {
-      "id": "indapi_12345",
-      "employerId": "techcorp",
-      "title": "Software Engineer - Fresher",
-      "description": "We are looking for enthusiastic software engineers to join our team...",
-      "location": "Bangalore, India",
-      "jobType": "Full-time",
-      "stipendMin": 0,
-      "stipendMax": 0,
-      "stipendCurrency": "INR",
-      "applicationDeadline": "2025-12-31T23:59:59Z",
-      "remoteOption": false,
-      "skillsRequired": [
-        "Python",
-        "JavaScript",
-        "SQL"
-      ],
-      "postedAt": "2024-09-27T02:15:00Z",
-      "updatedAt": "2024-09-27T02:15:00Z",
+      "id": "remoteok_1130561",
+      "employerId": "insomniac_games",
+      "title": "Lead VFX Artist",
+      "description": null,
+      "location": "United States",
+      "jobType": "Full Time",
+      "stipendMin": null,
+      "stipendMax": null,
+      "stipendCurrency": null,
+      "applicationDeadline": null,
+      "remoteOption": true,
+      "skillsRequired": [],
+      "postedAt": null,
+      "updatedAt": null,
       "status": "Active",
-      "applyLink": "https://techcorp.com/careers/software-engineer-fresher",
-      "source": "IndianAPI"
+      "applyLink": "https://remoteok.com/remote-jobs/1130561-remote-lead-vfx-artist-insomniac-games",
+      "source": "RemoteOK"
     }
   ]
 }

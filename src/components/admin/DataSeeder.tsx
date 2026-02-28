@@ -13,6 +13,7 @@ import jobsData from '@/data/jobs.json';
 /**
  * @fileOverview Administrative tool to seed Firestore with jobs from jobs.json.
  * Only visible to the user defined in NEXT_PUBLIC_ADMIN_EMAIL.
+ * Enhanced to handle null values from external streams.
  */
 export function DataSeeder() {
   const db = useFirestore();
@@ -32,26 +33,32 @@ export function DataSeeder() {
         const job = jobsData.jobs[i];
         const jobRef = doc(db, 'jobListings', job.id);
 
-        // Map JSON to Firestore Schema, ensuring numbers and proper dates
-        await setDoc(jobRef, {
+        // Sanitize data: provide defaults for null/missing fields to maintain schema integrity
+        const sanitizedJob = {
           ...job,
+          description: job.description || "Professional opportunity details coming soon. Please refer to the application link for more information.",
           stipendMin: job.stipendMin || 0,
           stipendMax: job.stipendMax || 0,
+          stipendCurrency: job.stipendCurrency || "USD",
+          applicationDeadline: job.applicationDeadline || "Open until filled",
           postedAt: job.postedAt || new Date().toISOString(),
           updatedAt: serverTimestamp(),
-        }, { merge: true });
+          status: job.status || "Active",
+          skillsRequired: job.skillsRequired || [],
+        };
 
+        await setDoc(jobRef, sanitizedJob, { merge: true });
         setProgress(Math.round(((i + 1) / total) * 100));
       }
 
       toast({
-        title: "Seed Successful",
-        description: `Ingested ${total} jobs from the global stream.`,
+        title: "Stream Synced",
+        description: `Successfully processed ${total} items from the global stream.`,
       });
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Seed Failed",
+        title: "Sync Failed",
         description: err.message,
       });
     } finally {
@@ -91,7 +98,7 @@ export function DataSeeder() {
           <div className="flex items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/5">
             <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-              Idempotent Update: Uses JSON IDs as doc keys to prevent duplication.
+              Handles null values and ensures data consistency.
             </p>
           </div>
         </div>
