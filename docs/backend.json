@@ -293,6 +293,18 @@
         "status",
         "updatedAt"
       ]
+    },
+    "SavedJob": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SavedJob",
+      "type": "object",
+      "description": "Represents a job listing bookmarked by a user.",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "savedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "jobId", "savedAt"]
     }
   },
   "auth": {
@@ -316,6 +328,20 @@
               "name": "jobseekerId",
               "description": "The unique identifier of the job seeker."
             }
+          ]
+        }
+      },
+      {
+        "path": "/jobseekerProfile/{jobseekerId}/savedJobs/{jobId}",
+        "definition": {
+          "entityName": "SavedJob",
+          "schema": {
+            "$ref": "#/backend/entities/SavedJob"
+          },
+          "description": "Stores bookmarks for job seekers.",
+          "params": [
+            { "name": "jobseekerId", "description": "The job seeker UID" },
+            { "name": "jobId", "description": "The job listing ID" }
           ]
         }
       },
@@ -368,6 +394,6 @@
         }
       }
     ],
-    "reasoning": "Renamed studentProfiles to jobseekerProfile for better clarity."
+    "reasoning": "Added SavedJob entity and path to support bookmarking functionality."
   }
 }

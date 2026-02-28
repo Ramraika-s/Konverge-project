@@ -1,9 +1,9 @@
 
 "use client";
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -26,13 +26,19 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { JobShareDialog } from '@/components/jobs/JobShareDialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useUser();
+  const { user, role } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
+
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const jobId = params.id as string;
   const jobRef = useMemoFirebase(() => {
@@ -42,12 +48,52 @@ export default function JobDetailPage() {
 
   const { data: job, isLoading } = useDoc(jobRef);
 
+  // Check if job is saved
+  const savedJobRef = useMemoFirebase(() => {
+    if (!db || !user || !jobId) return null;
+    return doc(db, 'jobseekerProfile', user.uid, 'savedJobs', jobId);
+  }, [db, user, jobId]);
+
+  const { data: savedJobData } = useDoc(savedJobRef);
+  const isBookmarked = !!savedJobData;
+
   const handleApply = () => {
     if (!user) {
       router.push('/auth#signup');
     } else {
-      // Logic for creating an application would go here
       router.push('/dashboard/job-seeker');
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!user || !db || role !== 'job-seeker') {
+      toast({
+        title: "Access Restricted",
+        description: "Only Job Seekers can bookmark opportunities.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!savedJobRef) return;
+
+    setIsSaving(true);
+    try {
+      if (isBookmarked) {
+        await deleteDoc(savedJobRef);
+        toast({ title: "Removed", description: "Opportunity removed from your bookmarks." });
+      } else {
+        await setDoc(savedJobRef, {
+          id: jobId,
+          jobId: jobId,
+          savedAt: new Date().toISOString()
+        });
+        toast({ title: "Saved!", description: "Opportunity bookmarked successfully." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -67,6 +113,8 @@ export default function JobDetailPage() {
       </div>
     );
   }
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -144,10 +192,20 @@ export default function JobDetailPage() {
                 </div>
 
                 <div className="pt-4 flex flex-col gap-4">
-                  <Button variant="outline" className="w-full h-14 gap-3 font-black rounded-2xl border-white/10 hover:bg-white/5 text-lg">
-                    <Bookmark className="w-5 h-5" /> Save Opportunity
+                  <Button 
+                    variant={isBookmarked ? "default" : "outline"}
+                    className={`w-full h-14 gap-3 font-black rounded-2xl border-white/10 text-lg transition-all ${isBookmarked ? 'bg-primary text-primary-foreground' : 'hover:bg-white/5'}`}
+                    onClick={handleBookmark}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />}
+                    {isBookmarked ? "Saved Opportunity" : "Save Opportunity"}
                   </Button>
-                  <Button variant="outline" className="w-full h-14 gap-3 font-black rounded-2xl border-white/10 hover:bg-white/5 text-lg">
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-14 gap-3 font-black rounded-2xl border-white/10 hover:bg-white/5 text-lg"
+                    onClick={() => setIsShareOpen(true)}
+                  >
                     <Share2 className="w-5 h-5" /> Share
                   </Button>
                 </div>
@@ -173,6 +231,13 @@ export default function JobDetailPage() {
           </div>
         </div>
       </div>
+
+      <JobShareDialog 
+        isOpen={isShareOpen} 
+        onOpenChange={setIsShareOpen} 
+        jobTitle={job.title} 
+        jobUrl={shareUrl} 
+      />
     </div>
   );
 }

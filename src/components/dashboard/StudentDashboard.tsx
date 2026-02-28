@@ -50,7 +50,14 @@ export function StudentDashboard() {
 
   const { data: recommendations, isLoading: isRecsLoading } = useCollection(recsQuery);
 
-  // 3. Calculate Stats
+  // 3. Fetch Saved Jobs count
+  const savedJobsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, 'jobseekerProfile', user.uid, 'savedJobs');
+  }, [db, user]);
+  const { data: savedJobs } = useCollection(savedJobsQuery);
+
+  // 4. Calculate Stats
   const stats = useMemo(() => {
     if (!applications) return { total: 0, interviewing: 0, rejected: 0 };
     return {
@@ -76,20 +83,29 @@ export function StudentDashboard() {
         {[
           { label: 'Total Applications', value: stats.total, icon: Briefcase, color: 'text-blue-400', sub: 'Active journey' },
           { label: 'In Review / Interview', value: stats.interviewing, icon: Calendar, color: 'text-primary', sub: 'Progressing fast' },
-          { label: 'Saved Stream', value: '0', icon: Bookmark, color: 'text-green-400', sub: 'Future targets' },
+          { 
+            label: 'Saved Stream', 
+            value: savedJobs?.length || 0, 
+            icon: Bookmark, 
+            color: 'text-green-400', 
+            sub: 'Future targets',
+            href: '/dashboard/job-seeker/bookmarks'
+          },
         ].map((stat) => (
-          <Card key={stat.label} className="glass-card border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all duration-300">
-            <CardContent className="p-8 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{stat.label}</p>
-                <p className="text-5xl font-black tracking-tighter">{stat.value}</p>
-                <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">{stat.sub}</p>
-              </div>
-              <div className={`p-4 rounded-2xl bg-white/5 ${stat.color} shadow-inner`}>
-                <stat.icon className="w-8 h-8" />
-              </div>
-            </CardContent>
-          </Card>
+          <Link key={stat.label} href={stat.href || '#'}>
+            <Card className="glass-card border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all duration-300 h-full">
+              <CardContent className="p-8 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{stat.label}</p>
+                  <p className="text-5xl font-black tracking-tighter">{stat.value}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">{stat.sub}</p>
+                </div>
+                <div className={`p-4 rounded-2xl bg-white/5 ${stat.color} shadow-inner`}>
+                  <stat.icon className="w-8 h-8" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -105,9 +121,11 @@ export function StudentDashboard() {
                 </Badge>
               )}
             </h2>
-            <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-white transition-colors">
-              History
-            </Button>
+            <Link href="/dashboard/job-seeker/bookmarks">
+              <Button variant="outline" className="text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-white/5">
+                View Saved Jobs
+              </Button>
+            </Link>
           </div>
 
           <div className="space-y-4">
