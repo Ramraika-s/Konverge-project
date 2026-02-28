@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -19,15 +18,17 @@ import {
   Users,
   ShieldCheck,
   Globe,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, deleteDoc, setDoc, query, collection, where } from 'firebase/firestore';
 import { JobShareDialog } from '@/components/jobs/JobShareDialog';
+import { JobApplyDialog } from '@/components/jobs/JobApplyDialog';
 import { useToast } from '@/hooks/use-toast';
 
 export default function JobDetailPage() {
@@ -38,31 +39,54 @@ export default function JobDetailPage() {
   const { toast } = useToast();
 
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const jobId = params.id as string;
+  
+  // 1. Fetch Job Details
   const jobRef = useMemoFirebase(() => {
     if (!db || !jobId) return null;
     return doc(db, 'jobListings', jobId);
   }, [db, jobId]);
-
   const { data: job, isLoading } = useDoc(jobRef);
 
-  // Check if job is saved
+  // 2. Check if job is saved
   const savedJobRef = useMemoFirebase(() => {
     if (!db || !user || !jobId) return null;
     return doc(db, 'jobseekerProfile', user.uid, 'savedJobs', jobId);
   }, [db, user, jobId]);
-
   const { data: savedJobData } = useDoc(savedJobRef);
   const isBookmarked = !!savedJobData;
 
-  const handleApply = () => {
+  // 3. Check for existing application
+  const existingAppQuery = useMemoFirebase(() => {
+    if (!db || !user || !jobId) return null;
+    return query(
+      collection(db, 'applications'),
+      where('studentId', '==', user.uid),
+      where('jobListingId', '==', jobId)
+    );
+  }, [db, user, jobId]);
+  const { data: existingApps, isLoading: isCheckingApps } = useCollection(existingAppQuery);
+  const hasApplied = existingApps && existingApps.length > 0;
+
+  const handleApplyClick = () => {
     if (!user) {
       router.push('/auth#signup');
-    } else {
-      router.push('/dashboard/job-seeker');
+      return;
     }
+    
+    if (role !== 'job-seeker') {
+      toast({
+        title: "Permission Denied",
+        description: "Only Job Seeker accounts can submit applications.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsApplyOpen(true);
   };
 
   const handleBookmark = async () => {
@@ -97,7 +121,7 @@ export default function JobDetailPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isCheckingApps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -148,7 +172,7 @@ export default function JobDetailPage() {
                 <div className="flex flex-wrap gap-3 pt-2">
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 font-black uppercase text-[10px] tracking-widest">{job.jobType}</Badge>
                   <Badge variant="outline" className="border-white/10 px-4 py-1.5 flex gap-2 items-center font-black text-[10px] tracking-widest uppercase">
-                    <DollarSign className="w-3 h-3" /> {job.stipendMin} - {job.stipendMax} / {job.stipendCurrency}
+                    <DollarSign className="w-3 h-3" /> {job.stipendMin?.toLocaleString()} - {job.stipendMax?.toLocaleString()} / {job.stipendCurrency}
                   </Badge>
                 </div>
               </div>
@@ -221,13 +245,19 @@ export default function JobDetailPage() {
             <h4 className="text-2xl font-black tracking-tight">{job.title}</h4>
           </div>
           <div className="flex flex-1 md:flex-none items-center gap-4">
-            <Button 
-              size="lg" 
-              className="flex-1 md:w-[400px] h-16 text-xl font-black gold-border-glow rounded-2xl shadow-2xl shadow-primary/20"
-              onClick={handleApply}
-            >
-              Apply Now
-            </Button>
+            {hasApplied ? (
+              <div className="flex-1 md:w-[400px] h-16 flex items-center justify-center gap-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-2xl font-black text-xl">
+                <CheckCircle2 className="w-6 h-6" /> Applied Successfully
+              </div>
+            ) : (
+              <Button 
+                size="lg" 
+                className="flex-1 md:w-[400px] h-16 text-xl font-black gold-border-glow rounded-2xl shadow-2xl shadow-primary/20"
+                onClick={handleApplyClick}
+              >
+                Apply Now
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -237,6 +267,13 @@ export default function JobDetailPage() {
         onOpenChange={setIsShareOpen} 
         jobTitle={job.title} 
         jobUrl={shareUrl} 
+      />
+
+      <JobApplyDialog
+        isOpen={isApplyOpen}
+        onOpenChange={setIsApplyOpen}
+        jobId={jobId}
+        jobTitle={job.title}
       />
     </div>
   );
