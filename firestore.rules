@@ -1,10 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Forced redeploy to ensure "allow all" rules are synchronized.
-    // Last Sync Trigger: 2025-03-01T12:00:00Z
+
     match /{document=**} {
       allow read, write: if true;
     }
+
   }
 }
