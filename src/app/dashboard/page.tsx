@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const db = useFirestore();
   const router = useRouter();
 
-  // 1. Check for any existing profile skeleton
+  // Check for any existing profile skeleton
   const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const isDataLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
 
   useEffect(() => {
+    // Wait until we are absolutely sure about the data
     if (isDataLoading) return;
 
     if (!user) {
@@ -36,7 +37,7 @@ export default function DashboardPage() {
     }
 
     // Direct routing: If ANY profile exists (skeleton or complete), push to the correct hub.
-    // This enforces the "Only One Role" rule by checking for existing data.
+    // We use router.replace to prevent history stacking during the routing logic.
     if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
     } else if (employerProfile) {
@@ -56,6 +57,8 @@ export default function DashboardPage() {
   // If we have a user but NO profile document exists at all (e.g. fresh Google users), 
   // show the choice step here. Once they choose, a skeleton is created and the 
   // useEffect above will trigger a redirect to the correct hub.
+  // Note: We don't need a guard here because if jobSeekerProfile or employerProfile 
+  // were true, the useEffect would have redirected the user already.
   return (
     <div className="container mx-auto px-4 py-24">
       <ProfileCompletionForm />

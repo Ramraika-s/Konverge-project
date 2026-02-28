@@ -19,13 +19,12 @@ export default function JobSeekerDashboardPage() {
   const db = useFirestore();
   const router = useRouter();
 
-  // Guard: Check for employer profile (to prevent cross-role access)
-  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
-  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
-
-  // Guard: Check for job seeker profile
+  // Fetch both to enforce role locking
   const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
+
+  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
+  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   const isDataLoading = isUserLoading || isEmployerLoading || isJobSeekerLoading;
 
@@ -37,14 +36,14 @@ export default function JobSeekerDashboardPage() {
       return;
     }
 
-    // STRICT ROLE GUARD: If user is an employer, they are forbidden from the seeker hub.
+    // Role Guard: If they are actually an employer, move them.
     if (employerProfile) {
       router.replace('/dashboard/employer');
       return;
     }
     
-    // If no seeker profile exists at all (and no employer profile), go back to central router to pick a role
-    if (!jobSeekerProfile && !employerProfile) {
+    // Existence Guard: If they have NO profile at all, go back to the central router to pick a role.
+    if (!jobSeekerProfile) {
       router.replace('/dashboard');
     }
   }, [user, isDataLoading, employerProfile, jobSeekerProfile, router]);
@@ -58,11 +57,10 @@ export default function JobSeekerDashboardPage() {
     );
   }
 
-  // Final validation before rendering
-  if (!user || employerProfile) return null;
+  // Final rendering logic: If we have a seeker profile, show dashboard or completion form.
+  if (!user || !jobSeekerProfile || employerProfile) return null;
 
-  // Check if seeker profile is professionally complete (has educationSummary)
-  const isProfileComplete = jobSeekerProfile && !!jobSeekerProfile.educationSummary;
+  const isProfileComplete = !!jobSeekerProfile.educationSummary;
 
   return (
     <div className="container mx-auto px-4 py-12">
