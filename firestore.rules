@@ -9,8 +9,6 @@ service cloud.firestore {
      * Core Philosophy:
      * Identity-based authorization enforcing privacy for profiles while allowing 
      * public access to job listings and shared access to applications.
-     * 
-     * DEPLOYMENT TRIGGER: Broadened jobListings read permissions to fix query listing errors.
      */
 
     // ==========================================
@@ -60,18 +58,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Job listings are public to all signed-in users but only editable by the posting employer.
+     * @description Job listings are public to everyone.
      */
     match /jobListings/{jobListingId} {
-      // Allow read (get and list) for any signed-in user to enable the job board.
-      allow read: if isSignedIn();
-      
-      // Creation restricted to employers posting as themselves.
-      allow create: if isSignedIn() && request.resource.data.employerId == request.auth.uid;
-      
-      // Updates and Deletions restricted to the original posting employer.
-      allow update: if resource != null && isDataOwner(resource.data.employerId) && request.resource.data.employerId == resource.data.employerId;
-      allow delete: if resource != null && isDataOwner(resource.data.employerId);
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     /**
@@ -79,7 +70,6 @@ service cloud.firestore {
      */
     match /applications/{applicationId} {
       // Allow listing applications for signed-in users. 
-      // Individual document 'get' is further protected below.
       allow list: if isSignedIn();
       
       // Detailed document-level access
