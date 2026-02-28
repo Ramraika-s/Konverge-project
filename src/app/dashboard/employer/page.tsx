@@ -12,6 +12,7 @@ import { doc } from 'firebase/firestore';
 /**
  * @fileOverview Employer Dashboard.
  * Shows the completion form if profile is incomplete, or the hub if complete.
+ * Strictly guards against job seeker access.
  */
 export default function EmployerDashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -34,13 +35,13 @@ export default function EmployerDashboardPage() {
       return;
     }
 
-    // Role Guard: If user is actually a job seeker, move them to the correct hub.
+    // STRICT ROLE GUARD: If user is a job seeker, they are forbidden from the employer hub.
     if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
     }
 
     // If no employer profile exists at all, go back to central router to pick a role
-    if (!employerProfile) {
+    if (!employerProfile && !jobSeekerProfile) {
       router.replace('/dashboard');
     }
   }, [user, isUserLoading, jobSeekerProfile, isJobSeekerLoading, employerProfile, isEmployerLoading, router]);
@@ -53,10 +54,11 @@ export default function EmployerDashboardPage() {
     );
   }
 
-  if (!user || !employerProfile) return null;
+  // If a user is incorrectly here (e.g. a job seeker), the guard above will redirect them.
+  if (!user || jobSeekerProfile) return null;
 
-  // Check if profile is professionally complete (has companyWebsite)
-  const isProfileComplete = !!employerProfile.companyWebsite;
+  // Check if employer profile is professionally complete (has companyWebsite)
+  const isProfileComplete = employerProfile && !!employerProfile.companyWebsite;
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -72,6 +74,7 @@ export default function EmployerDashboardPage() {
         </>
       ) : (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Host the completion form here so the user stays on their designated route */}
           <ProfileCompletionForm />
         </div>
       )}

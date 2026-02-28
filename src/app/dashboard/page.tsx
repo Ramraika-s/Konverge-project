@@ -33,7 +33,8 @@ export default function DashboardPage() {
       return;
     }
 
-    // Direct routing: If ANY profile exists (skeleton or complete), push to the hub.
+    // Direct routing: If ANY profile exists (skeleton or complete), push to the correct hub.
+    // This enforces the "Only One Role" rule by checking for existing data.
     if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
     } else if (employerProfile) {
@@ -51,10 +52,7 @@ export default function DashboardPage() {
     );
   }
 
-  // If a profile already exists, we are redirecting, so show nothing to avoid flash
-  if (jobSeekerProfile || employerProfile) return null;
-
-  // If we have a user but NO profile document exists at all (Google users), 
+  // If we have a user but NO profile document exists at all (e.g. fresh Google users), 
   // show the choice step here. Once they choose, a skeleton is created and the 
   // useEffect above will trigger a redirect to the correct hub.
   return (
