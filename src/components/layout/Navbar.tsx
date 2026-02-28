@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -23,16 +24,14 @@ export function Navbar() {
   const db = useFirestore();
   const { user, isUserLoading } = useUser();
 
-  // Role detection for the Navbar
   const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: seekerProfile, isLoading: isSeekerLoading } = useDoc(seekerRef);
   
   const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
   
-  const navLinks = [
-    { name: 'Find Jobs', href: '/jobs', icon: Search },
-  ];
+  const isProfileLoading = isSeekerLoading || isEmployerLoading;
+  const isLoading = isUserLoading || (!!user && isProfileLoading);
 
   const handleLogout = async () => {
     if (auth) {
@@ -40,10 +39,6 @@ export function Navbar() {
       router.push('/');
     }
   };
-
-  // Only consider verification complete when all profile queries have finished resolving
-  const isProfileLoading = isSeekerLoading || isEmployerLoading;
-  const isLoading = isUserLoading || (!!user && isProfileLoading);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
@@ -59,19 +54,15 @@ export function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === link.href ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+            <Link
+              href="/jobs"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                pathname === '/jobs' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Find Jobs
+            </Link>
             
-            {/* Show only the verified dashboard link to prevent "double dashboard" glitch */}
             {!isLoading && user && (
               <div className="flex items-center gap-4 border-l border-white/10 pl-4 animate-in fade-in duration-300">
                 {seekerProfile ? (
@@ -94,9 +85,9 @@ export function Navbar() {
                   </Link>
                 ) : (
                   <Link
-                    href="/dashboard"
+                    href="/dashboard/job-seeker"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
-                      pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground'
+                      pathname.includes('/dashboard') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
                     Setup Dashboard
@@ -155,7 +146,7 @@ export function Navbar() {
                       </div>
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard')}>
+                    <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
                       <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
                         <span className="font-bold text-sm">Complete Setup</span>
@@ -187,12 +178,7 @@ export function Navbar() {
                     <Search className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                     Find Jobs
                   </Link>
-                  {isLoading ? (
-                    <div className="flex items-center gap-4 px-2 py-4 animate-pulse">
-                       <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                       <span className="text-sm font-bold text-muted-foreground">Verifying access...</span>
-                    </div>
-                  ) : user ? (
+                  {!isLoading && user && (
                     <>
                       {seekerProfile ? (
                         <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
@@ -205,13 +191,13 @@ export function Navbar() {
                           Employer Hub
                         </Link>
                       ) : (
-                        <Link href="/dashboard" className="text-xl font-bold flex items-center gap-4 group">
+                        <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
                           <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                           Setup Dashboard
                         </Link>
                       )}
                     </>
-                  ) : null}
+                  )}
                   <hr className="border-white/5" />
                   {!user && !isLoading ? (
                     <Link href="/auth#signup">

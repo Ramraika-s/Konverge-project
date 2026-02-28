@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,15 +14,23 @@ import { Briefcase, ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
+import { doc } from 'firebase/firestore';
 
 export default function AuthPage() {
   const auth = useAuth();
+  const db = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('login');
   const [isLoading, setIsLoading] = useState(false);
+
+  const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user?.uid), [db, user]);
+  const { data: seekerProfile, isLoading: isSeekerLoading } = useDoc(seekerRef);
+  
+  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user?.uid), [db, user]);
+  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -31,12 +40,15 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Main user watcher for redirection
   useEffect(() => {
-    if (user && !isUserLoading && !isLoading) {
-      router.push('/dashboard');
+    if (user && !isUserLoading && !isSeekerLoading && !isEmployerLoading && !isLoading) {
+      if (employerProfile) {
+        router.push('/dashboard/employer');
+      } else {
+        router.push('/dashboard/job-seeker');
+      }
     }
-  }, [user, isUserLoading, isLoading, router]);
+  }, [user, isUserLoading, isSeekerLoading, isEmployerLoading, isLoading, employerProfile, router]);
 
   const handleGoogleAuth = async () => {
     if (!auth || isLoading) return; 
@@ -45,17 +57,9 @@ export default function AuthPage() {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      const result = await signInWithPopup(auth, provider);
-      
-      if (result.user) {
-        toast({
-          title: "Signed in with Google",
-          description: "Successfully authenticated.",
-        });
-        // Redirection to dashboard is handled by the user watcher above
-      }
+      await signInWithPopup(auth, provider);
+      toast({ title: "Signed in with Google", description: "Successfully authenticated." });
     } catch (err: any) {
-      // Only show error if it's not a known non-error state (like user closing the popup)
       if (err.code !== 'auth/popup-closed-by-user') {
         toast({
           variant: "destructive",
@@ -78,7 +82,6 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] grid place-items-center px-4 py-12 relative bg-background overflow-hidden">
-      {/* Background Image Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <Image
           src="https://picsum.photos/seed/tech/1920/1080"
@@ -91,8 +94,6 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-linear-to-b from-background via-transparent to-background" />
       </div>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
-      
       <div className="w-full max-w-lg relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8 group font-bold">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to home
@@ -135,27 +136,15 @@ export default function AuthPage() {
               <div className="grid grid-cols-1 gap-4 w-full">
                 <Button 
                   variant="ghost" 
-                  className="h-11 border-white/10 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden gold-shine-hover no-grey-hover shadow-sm border bg-transparent hover:bg-transparent"
+                  className="h-11 border-white/10 rounded-xl font-bold flex gap-2 transition-all relative overflow-hidden shadow-sm border bg-transparent hover:bg-transparent"
                   onClick={handleGoogleAuth}
                   disabled={isLoading}
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                   </svg>
                   {isLoading ? 'Connecting...' : 'Continue with Google'}
                 </Button>

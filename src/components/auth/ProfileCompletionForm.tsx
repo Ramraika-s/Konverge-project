@@ -19,22 +19,15 @@ import {
   Globe, 
   Sparkles, 
   FileText,
-  Briefcase,
   ArrowRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-/**
- * @fileOverview Progressive Profile Completion Form.
- * Automatically adapts based on whether a "skeleton" profile already exists.
- * Strictly enforces a single role per user.
- */
 export function ProfileCompletionForm() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
 
-  // Check existing profiles to detect role locking
   const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: seekerDoc } = useDoc(seekerRef);
   
@@ -45,23 +38,17 @@ export function ProfileCompletionForm() {
   const [isEmployer, setIsEmployer] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Job Seeker Fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [skills, setSkills] = useState('');
   const [educationSummary, setEducationSummary] = useState('');
-  const [preferredRoles, setPreferredRoles] = useState('');
-  const [preferredLocations, setPreferredLocations] = useState('');
-
-  // Employer Fields
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [companyDescription, setCompanyDescription] = useState('');
   const [contactPersonName, setContactPersonName] = useState('');
   const [companyLocation, setCompanyLocation] = useState('');
 
-  // Role Locking Logic: Detect existing skeleton profiles
   useEffect(() => {
     if (seekerDoc) {
       setIsEmployer(false);
@@ -74,7 +61,6 @@ export function ProfileCompletionForm() {
       setCompanyName(employerDoc.companyName || '');
       setContactPersonName(employerDoc.contactPersonName || '');
     } else if (user?.displayName) {
-      // For fresh Google users who haven't picked a role yet
       setFirstName(user.displayName.split(' ')[0] || '');
       setLastName(user.displayName.split(' ').slice(1).join(' ') || '');
       setContactPersonName(user.displayName);
@@ -88,13 +74,10 @@ export function ProfileCompletionForm() {
     setIsLoading(true);
 
     try {
-      // Ensure we use the role that was either picked or already exists
-      const targetRole = seekerDoc ? 'jobseekerProfile' : (employerDoc ? 'employerProfiles' : (isEmployer ? 'employerProfiles' : 'jobseekerProfile'));
-      const profileRef = doc(db, targetRole, user.uid);
+      const targetCollection = isEmployer ? 'employerProfiles' : 'jobseekerProfile';
+      const profileRef = doc(db, targetCollection, user.uid);
       
-      const isActuallyEmployer = targetRole === 'employerProfiles';
-
-      const profileData = isActuallyEmployer ? {
+      const profileData = isEmployer ? {
         id: user.uid,
         companyName,
         companyWebsite,
@@ -113,8 +96,8 @@ export function ProfileCompletionForm() {
         educationSummary,
         skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
         resumeUrl: `https://example.com/resumes/${user.uid}`,
-        preferredRoles: preferredRoles.split(',').map(s => s.trim()).filter(s => s !== ''),
-        preferredLocations: preferredLocations.split(',').map(s => s.trim()).filter(s => s !== ''),
+        preferredRoles: [],
+        preferredLocations: [],
         isRemotePreferred: true,
         updatedAt: new Date().toISOString(),
       };
@@ -136,10 +119,9 @@ export function ProfileCompletionForm() {
     }
   };
 
-  // Step 1: Role Selection (Only shown to users with NO existing profile document)
   if (step === 'choice' && !seekerDoc && !employerDoc) {
     return (
-      <div className="max-w-3xl mx-auto text-center space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="max-w-3xl mx-auto text-center space-y-12 py-12">
         <div className="space-y-4">
           <h1 className="text-5xl font-black tracking-tight text-white">One last <span className="text-primary gold-glow">step</span></h1>
           <p className="text-xl text-muted-foreground max-w-xl mx-auto">To provide a premium experience, we need to know your professional role at Konnex.</p>
@@ -182,9 +164,8 @@ export function ProfileCompletionForm() {
     );
   }
 
-  // Step 2: Final Details (Shown once a role is chosen or detected)
   return (
-    <Card className="max-w-xl mx-auto glass-card border-white/5 shadow-2xl rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden">
+    <Card className="max-w-xl mx-auto glass-card border-white/5 shadow-2xl rounded-3xl overflow-hidden">
       <CardHeader className="text-center border-b border-white/5 bg-primary/5 p-8">
         <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
           {isEmployer ? <Building2 className="w-6 h-6 text-primary-foreground" /> : <User className="w-6 h-6 text-primary-foreground" />}
@@ -199,20 +180,20 @@ export function ProfileCompletionForm() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name <span className="text-destructive">*</span></Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
                   <Input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name <span className="text-destructive">*</span></Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name</Label>
                   <Input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Number <span className="text-destructive">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Number</Label>
                 <Input required placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3" /> Education Summary <span className="text-destructive">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3" /> Education Summary</Label>
                 <Textarea required placeholder="E.g. Senior Year Computer Science Student at Stanford" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl" />
               </div>
               <div className="space-y-2">
@@ -223,11 +204,11 @@ export function ProfileCompletionForm() {
           ) : (
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Building2 className="w-3 h-3" /> Company Name <span className="text-destructive">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Building2 className="w-3 h-3" /> Company Name</Label>
                 <Input required placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Company Website <span className="text-destructive">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Company Website</Label>
                 <Input required placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
               <div className="space-y-2">
@@ -236,11 +217,11 @@ export function ProfileCompletionForm() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Primary Contact <span className="text-destructive">*</span></Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Primary Contact</Label>
                   <Input required value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MapPin className="w-3 h-3" /> HQ Location <span className="text-destructive">*</span></Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MapPin className="w-3 h-3" /> HQ Location</Label>
                   <Input required placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
               </div>

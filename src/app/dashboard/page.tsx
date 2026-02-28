@@ -6,19 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import { doc } from 'firebase/firestore';
-import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 
 /**
- * @fileOverview Central dashboard router.
- * Its ONLY purpose is to forward users to /dashboard/job-seeker or /dashboard/employer.
- * If no profile exists (e.g. fresh Google user), it shows the initial Role Choice.
+ * @fileOverview Backward compatibility redirect.
+ * Since /dashboard is removed, any legacy entries are pushed to the job-seeker hub
+ * which now handles initial role selection if no profile exists.
  */
-export default function DashboardPage() {
+export default function DashboardRedirect() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
 
-  // Check for any existing profile skeleton
   const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
@@ -28,7 +26,6 @@ export default function DashboardPage() {
   const isDataLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
 
   useEffect(() => {
-    // Wait until we are absolutely sure about the data
     if (isDataLoading) return;
 
     if (!user) {
@@ -36,32 +33,17 @@ export default function DashboardPage() {
       return;
     }
 
-    // Direct routing: If ANY profile exists (skeleton or complete), push to the correct hub.
-    // We use router.replace to prevent history stacking during the routing logic.
-    if (jobSeekerProfile) {
-      router.replace('/dashboard/job-seeker');
-    } else if (employerProfile) {
+    if (employerProfile) {
       router.replace('/dashboard/employer');
+    } else {
+      router.replace('/dashboard/job-seeker');
     }
   }, [user, isDataLoading, jobSeekerProfile, employerProfile, router]);
 
-  if (isDataLoading) {
-    return (
-      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Verifying Access...</p>
-      </div>
-    );
-  }
-
-  // If we have a user but NO profile document exists at all (e.g. fresh Google users), 
-  // show the choice step here. Once they choose, a skeleton is created and the 
-  // useEffect above will trigger a redirect to the correct hub.
-  // Note: We don't need a guard here because if jobSeekerProfile or employerProfile 
-  // were true, the useEffect would have redirected the user already.
   return (
-    <div className="container mx-auto px-4 py-24">
-      <ProfileCompletionForm />
+    <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <p className="text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Redirecting to your Hub...</p>
     </div>
   );
 }
