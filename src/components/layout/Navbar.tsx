@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Briefcase, Search, User, LogOut, Menu, Loader2, UserCircle, Building2, LayoutDashboard, Settings } from 'lucide-react';
+import { Briefcase, User, LogOut, Menu, Loader2, LayoutDashboard, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -13,25 +12,14 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
-import { doc } from 'firebase/firestore';
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
-  const db = useFirestore();
-  const { user, isUserLoading } = useUser();
-
-  const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
-  const { data: seekerProfile, isLoading: isSeekerLoading } = useDoc(seekerRef);
-  
-  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
-  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
-  
-  const isProfileLoading = isSeekerLoading || isEmployerLoading;
-  const isLoading = isUserLoading || (!!user && isProfileLoading);
+  const { user, isUserLoading, role } = useUser();
 
   const handleLogout = async () => {
     if (auth) {
@@ -63,9 +51,9 @@ export function Navbar() {
               Find Jobs
             </Link>
             
-            {!isLoading && user && (
+            {!isUserLoading && user && (
               <div className="flex items-center gap-4 border-l border-white/10 pl-4 animate-in fade-in duration-300">
-                {seekerProfile ? (
+                {role === 'job-seeker' ? (
                   <Link
                     href="/dashboard/job-seeker"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
@@ -74,7 +62,7 @@ export function Navbar() {
                   >
                     Seeker Hub
                   </Link>
-                ) : employerProfile ? (
+                ) : role === 'employer' ? (
                   <Link
                     href="/dashboard/employer"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
@@ -85,9 +73,9 @@ export function Navbar() {
                   </Link>
                 ) : (
                   <Link
-                    href="/dashboard/job-seeker"
+                    href="/dashboard"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
-                      pathname.includes('/dashboard') ? 'text-primary' : 'text-muted-foreground'
+                      pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
                     Setup Dashboard
@@ -100,7 +88,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-4">
-            {isLoading ? (
+            {isUserLoading ? (
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             ) : !user ? (
               <>
@@ -129,7 +117,7 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
                   
-                  {seekerProfile ? (
+                  {role === 'job-seeker' ? (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
                       <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
@@ -137,7 +125,7 @@ export function Navbar() {
                         <span className="text-[10px] text-muted-foreground">Manage applications</span>
                       </div>
                     </DropdownMenuItem>
-                  ) : employerProfile ? (
+                  ) : role === 'employer' ? (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/employer')}>
                       <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
@@ -175,30 +163,20 @@ export function Navbar() {
               <SheetContent side="right" className="bg-background border-l-white/5 p-8">
                 <div className="flex flex-col gap-8 mt-12">
                   <Link href="/jobs" className="text-xl font-bold flex items-center gap-4 group">
-                    <Search className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                     Find Jobs
                   </Link>
-                  {!isLoading && user && (
+                  {!isUserLoading && user && (
                     <>
-                      {seekerProfile ? (
-                        <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
-                          <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                          Dashboard
-                        </Link>
-                      ) : employerProfile ? (
-                        <Link href="/dashboard/employer" className="text-xl font-bold flex items-center gap-4 group">
-                          <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                          Dashboard
-                        </Link>
+                      {role === 'job-seeker' ? (
+                        <Link href="/dashboard/job-seeker" className="text-xl font-bold">Dashboard</Link>
+                      ) : role === 'employer' ? (
+                        <Link href="/dashboard/employer" className="text-xl font-bold">Dashboard</Link>
                       ) : null}
-                      <Link href="/profile" className="text-xl font-bold flex items-center gap-4 group">
-                        <Settings className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                        Profile
-                      </Link>
+                      <Link href="/profile" className="text-xl font-bold">Profile</Link>
                     </>
                   )}
                   <hr className="border-white/5" />
-                  {!user && !isLoading ? (
+                  {!user && !isUserLoading ? (
                     <Link href="/auth#signup">
                       <Button className="w-full h-14 font-black gold-border-glow text-lg">Get Started</Button>
                     </Link>
