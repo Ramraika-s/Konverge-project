@@ -27,34 +27,38 @@ export default function EmployerDashboardPage() {
   const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
+  const isDataLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
+
   useEffect(() => {
-    if (isUserLoading || isJobSeekerLoading || isEmployerLoading) return;
+    if (isDataLoading) return;
 
     if (!user) {
-      router.push('/auth');
+      router.replace('/auth');
       return;
     }
 
     // STRICT ROLE GUARD: If user is a job seeker, they are forbidden from the employer hub.
     if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
+      return;
     }
 
-    // If no employer profile exists at all, go back to central router to pick a role
+    // If no employer profile exists at all (and no seeker profile), go back to central router to pick a role
     if (!employerProfile && !jobSeekerProfile) {
       router.replace('/dashboard');
     }
-  }, [user, isUserLoading, jobSeekerProfile, isJobSeekerLoading, employerProfile, isEmployerLoading, router]);
+  }, [user, isDataLoading, jobSeekerProfile, employerProfile, router]);
 
-  if (isUserLoading || isJobSeekerLoading || isEmployerLoading) {
+  if (isDataLoading) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Syncing Employer Hub...</p>
       </div>
     );
   }
 
-  // If a user is incorrectly here (e.g. a job seeker), the guard above will redirect them.
+  // Final validation before rendering
   if (!user || jobSeekerProfile) return null;
 
   // Check if employer profile is professionally complete (has companyWebsite)
@@ -74,7 +78,6 @@ export default function EmployerDashboardPage() {
         </>
       ) : (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Host the completion form here so the user stays on their designated route */}
           <ProfileCompletionForm />
         </div>
       )}

@@ -27,34 +27,38 @@ export default function JobSeekerDashboardPage() {
   const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
+  const isDataLoading = isUserLoading || isEmployerLoading || isJobSeekerLoading;
+
   useEffect(() => {
-    if (isUserLoading || isEmployerLoading || isJobSeekerLoading) return;
+    if (isDataLoading) return;
 
     if (!user) {
-      router.push('/auth');
+      router.replace('/auth');
       return;
     }
 
     // STRICT ROLE GUARD: If user is an employer, they are forbidden from the seeker hub.
     if (employerProfile) {
       router.replace('/dashboard/employer');
+      return;
     }
     
-    // If no seeker profile exists at all, go back to central router to pick a role
+    // If no seeker profile exists at all (and no employer profile), go back to central router to pick a role
     if (!jobSeekerProfile && !employerProfile) {
       router.replace('/dashboard');
     }
-  }, [user, isUserLoading, employerProfile, isEmployerLoading, jobSeekerProfile, isJobSeekerLoading, router]);
+  }, [user, isDataLoading, employerProfile, jobSeekerProfile, router]);
 
-  if (isUserLoading || isEmployerLoading || isJobSeekerLoading) {
+  if (isDataLoading) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Syncing Seeker Dashboard...</p>
       </div>
     );
   }
 
-  // If a user is incorrectly here (e.g. an employer), the guard above will redirect them.
+  // Final validation before rendering
   if (!user || employerProfile) return null;
 
   // Check if seeker profile is professionally complete (has educationSummary)
@@ -74,7 +78,6 @@ export default function JobSeekerDashboardPage() {
         </>
       ) : (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Host the completion form here so the user stays on their designated route */}
           <ProfileCompletionForm />
         </div>
       )}

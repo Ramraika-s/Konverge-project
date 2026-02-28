@@ -25,11 +25,13 @@ export default function DashboardPage() {
   const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
+  const isDataLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
+
   useEffect(() => {
-    if (isUserLoading || isJobSeekerLoading || isEmployerLoading) return;
+    if (isDataLoading) return;
 
     if (!user) {
-      router.push('/auth');
+      router.replace('/auth');
       return;
     }
 
@@ -40,14 +42,13 @@ export default function DashboardPage() {
     } else if (employerProfile) {
       router.replace('/dashboard/employer');
     }
-  }, [user, isUserLoading, isJobSeekerLoading, isEmployerLoading, jobSeekerProfile, employerProfile, router]);
-
-  const isDataLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
+  }, [user, isDataLoading, jobSeekerProfile, employerProfile, router]);
 
   if (isDataLoading) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Verifying Access...</p>
       </div>
     );
   }
