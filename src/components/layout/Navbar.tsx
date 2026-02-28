@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Briefcase, Search, User, LogOut, Menu, Loader2, UserCircle, Building2, LayoutDashboard } from 'lucide-react';
+import { Briefcase, Search, User, LogOut, Menu, Loader2, UserCircle, Building2, LayoutDashboard, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -131,29 +131,29 @@ export function Navbar() {
                   
                   {seekerProfile ? (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
-                      <UserCircle className="mr-3 h-5 w-5 text-primary" /> 
+                      <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm">Job Seeker Hub</span>
+                        <span className="font-bold text-sm">Seeker Dashboard</span>
                         <span className="text-[10px] text-muted-foreground">Manage applications</span>
                       </div>
                     </DropdownMenuItem>
                   ) : employerProfile ? (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/employer')}>
-                      <Building2 className="mr-3 h-5 w-5 text-primary" /> 
+                      <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm">Employer Hub</span>
+                        <span className="font-bold text-sm">Employer Dashboard</span>
                         <span className="text-[10px] text-muted-foreground">Manage listings</span>
                       </div>
                     </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
-                      <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
-                      <div className="flex flex-col">
-                        <span className="font-bold text-sm">Complete Setup</span>
-                        <span className="text-[10px] text-muted-foreground">Choose your role</span>
-                      </div>
-                    </DropdownMenuItem>
-                  )}
+                  ) : null}
+
+                  <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/profile')}>
+                    <Settings className="mr-3 h-5 w-5 text-primary" /> 
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm">Manage Profile</span>
+                      <span className="text-[10px] text-muted-foreground">Identity & Security</span>
+                    </div>
+                  </DropdownMenuItem>
 
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem className="text-destructive cursor-pointer rounded-lg py-3" onClick={handleLogout}>
@@ -182,20 +182,19 @@ export function Navbar() {
                     <>
                       {seekerProfile ? (
                         <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
-                          <UserCircle className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                          Job Seeker Hub
+                          <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                          Dashboard
                         </Link>
                       ) : employerProfile ? (
                         <Link href="/dashboard/employer" className="text-xl font-bold flex items-center gap-4 group">
-                          <Building2 className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                          Employer Hub
-                        </Link>
-                      ) : (
-                        <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
                           <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                          Setup Dashboard
+                          Dashboard
                         </Link>
-                      )}
+                      ) : null}
+                      <Link href="/profile" className="text-xl font-bold flex items-center gap-4 group">
+                        <Settings className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                        Profile
+                      </Link>
                     </>
                   )}
                   <hr className="border-white/5" />
