@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -17,15 +18,11 @@ import {
   Globe, 
   Sparkles, 
   FileText,
-  MapPin
+  MapPin,
+  Link as LinkIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-/**
- * @fileOverview Profile Details Completion Form.
- * This form is shown on the specialized dashboards when the profile 
- * is missing its "professional markers" (like education or website).
- */
 export function ProfileCompletionForm() {
   const { user, role } = useUser();
   const db = useFirestore();
@@ -46,6 +43,7 @@ export function ProfileCompletionForm() {
   const [contactNumber, setContactNumber] = useState('');
   const [skills, setSkills] = useState('');
   const [educationSummary, setEducationSummary] = useState('');
+  const [resumeUrl, setResumeUrl] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [companyDescription, setCompanyDescription] = useState('');
@@ -59,6 +57,7 @@ export function ProfileCompletionForm() {
       setContactNumber(seekerDoc.contactNumber || '');
       setEducationSummary(seekerDoc.educationSummary || '');
       setSkills(seekerDoc.skills?.join(', ') || '');
+      setResumeUrl(seekerDoc.resumeUrl || '');
     } else if (employerDoc) {
       setCompanyName(employerDoc.companyName || '');
       setContactPersonName(employerDoc.contactPersonName || '');
@@ -82,7 +81,7 @@ export function ProfileCompletionForm() {
       const profileData = isEmployer ? {
         companyName,
         companyWebsite,
-        companyDescription: companyDescription || "Leading innovation in our industry.",
+        companyDescription: companyDescription || "Pioneering innovation through talent.",
         contactPersonName,
         contactEmail: user.email,
         contactNumber,
@@ -93,6 +92,7 @@ export function ProfileCompletionForm() {
         lastName,
         contactNumber,
         educationSummary,
+        resumeUrl,
         skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
         updatedAt: new Date().toISOString(),
       };
@@ -100,14 +100,14 @@ export function ProfileCompletionForm() {
       setDocumentNonBlocking(profileRef, profileData, { merge: true });
 
       toast({
-        title: "Profile Finalized",
-        description: `Welcome to your hub.`,
+        title: "Onboarding Complete",
+        description: `Your workspace is now ready.`,
       });
       
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Update Failed",
+        title: "Setup Failed",
         description: err.message,
       });
       setIsLoading(false);
@@ -120,8 +120,8 @@ export function ProfileCompletionForm() {
         <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
           {isEmployer ? <Building2 className="w-6 h-6 text-primary-foreground" /> : <User className="w-6 h-6 text-primary-foreground" />}
         </div>
-        <CardTitle className="text-2xl font-black text-white">Complete your professional profile</CardTitle>
-        <CardDescription className="text-muted-foreground font-medium">Add a few more details to unlock your full dashboard.</CardDescription>
+        <CardTitle className="text-2xl font-black text-white">Refine Your Identity</CardTitle>
+        <CardDescription className="text-muted-foreground font-medium">Finalize these details to access the Konnex network.</CardDescription>
       </CardHeader>
 
       <CardContent className="p-10">
@@ -131,53 +131,53 @@ export function ProfileCompletionForm() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
-                  <Input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                  <Input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name</Label>
-                  <Input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                  <Input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Phone Number</Label>
-                <Input required value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3 text-primary" /> Contact Number</Label>
+                <Input required value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3" /> Education/Professional Bio</Label>
-                <Textarea required placeholder="Tell us about your background..." value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[120px] rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3 text-primary" /> Resume Link (Google Drive / Dropbox)</Label>
+                <Input required type="url" placeholder="https://drive.google.com/..." value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Sparkles className="w-3 h-3" /> Key Skills (comma separated)</Label>
-                <Input placeholder="React, Python, Sales..." value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><LinkIcon className="w-3 h-3 text-primary" /> Professional Bio</Label>
+                <Textarea required placeholder="Describe your career goals and core expertise..." value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[120px] rounded-xl text-sm" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Sparkles className="w-3 h-3 text-primary" /> Tech Stack (comma separated)</Label>
+                <Input placeholder="React, SQL, Python..." value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
               </div>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Building2 className="w-3 h-3" /> Company Name</Label>
-                <Input required value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Building2 className="w-3 h-3 text-primary" /> Official Company Name</Label>
+                <Input required value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Official Website</Label>
-                <Input required placeholder="https://company.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3 text-primary" /> Corporate Website</Label>
+                <Input required type="url" placeholder="https://brand.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Company Mission</Label>
-                <Textarea placeholder="Tell us about what you do..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[120px] rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mission Statement</Label>
+                <Textarea placeholder="What impact is your organization making?" value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[120px] rounded-xl text-sm" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
-                  <Input required value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Lead</Label>
+                  <Input required value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MapPin className="w-3 h-3" /> Primary Location</Label>
-                  <Input required placeholder="City, Country" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MapPin className="w-3 h-3 text-primary" /> Main Hub</Label>
+                  <Input required placeholder="City, Country" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Phone</Label>
-                <Input required value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
             </div>
           )}
@@ -187,7 +187,7 @@ export function ProfileCompletionForm() {
             disabled={isLoading}
             className="w-full h-14 font-black text-lg gold-border-glow rounded-xl mt-4"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Finish Setup'}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirm & Proceed'}
           </Button>
         </form>
       </CardContent>

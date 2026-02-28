@@ -41,7 +41,7 @@
         },
         "resumeUrl": {
           "type": "string",
-          "description": "A URL pointing to the job seeker's resume.",
+          "description": "A Google Drive or Dropbox URL pointing to the job seeker's resume.",
           "format": "uri"
         },
         "portfolioUrl": {
@@ -393,7 +393,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "Added SavedJob entity and path to support bookmarking functionality."
+    ]
   }
 }

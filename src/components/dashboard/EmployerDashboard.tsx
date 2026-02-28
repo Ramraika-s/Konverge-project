@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  MapPin
+  MapPin,
+  Building2,
+  AlertCircle
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -29,7 +31,7 @@ import { collection, query, where, orderBy } from 'firebase/firestore';
 import { DataSeeder } from '@/components/admin/DataSeeder';
 
 export function EmployerDashboard() {
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const db = useFirestore();
 
   const jobsQuery = useMemoFirebase(() => {
@@ -45,6 +47,7 @@ export function EmployerDashboard() {
 
   // Check if current user is admin
   const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isProfileComplete = !!profile?.companyWebsite && !!profile?.companyDescription;
 
   if (isLoading) {
     return (
@@ -56,33 +59,59 @@ export function EmployerDashboard() {
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black tracking-tight">Recruitment Overview</h2>
-          <p className="text-muted-foreground text-sm font-medium">Tracking your organization's talent pipeline.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 animate-in fade-in slide-in-from-left duration-500">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-3xl bg-primary flex items-center justify-center text-primary-foreground shadow-2xl">
+            <Building2 className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black tracking-tight">{profile?.companyName || 'Corporate Hub'}</h2>
+            <p className="text-muted-foreground font-medium">Recruitment dashboard for {profile?.contactPersonName || 'Admin'}</p>
+          </div>
         </div>
         <div className="flex gap-4">
            <Link href="/employer/post-job">
-            <Button className="gap-2 h-12 px-6 gold-border-glow font-bold rounded-xl w-full sm:w-auto">
-              <Plus className="w-4 h-4" /> Post a Vacancy
+            <Button className="gap-2 h-14 px-8 gold-border-glow font-black rounded-2xl w-full sm:w-auto shadow-2xl shadow-primary/20">
+              <Plus className="w-5 h-5" /> Post New Vacancy
             </Button>
           </Link>
         </div>
       </div>
 
+      {!isProfileComplete && (
+        <Link href="/profile">
+          <Card className="border-primary/30 bg-primary/5 rounded-[2rem] border-dashed hover:bg-primary/10 transition-colors cursor-pointer group">
+            <CardContent className="p-6 flex items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                  <AlertCircle className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-black uppercase tracking-widest">Verify Your Organization</p>
+                  <p className="text-xs text-muted-foreground font-medium">Complete your company profile to increase trust scores and attract high-tier talent.</p>
+                </div>
+              </div>
+              <Button variant="outline" className="hidden sm:flex border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest rounded-xl group-hover:bg-primary group-hover:text-primary-foreground">
+                Complete Setup
+              </Button>
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
         {[
-          { label: 'Active Postings', value: postings?.length || 0, icon: FilePlus, change: 'Updated', color: 'text-primary' },
-          { label: 'Total Applicants', value: 'N/A', icon: Users, change: 'Tracking enabled', color: 'text-blue-400' },
-          { label: 'Conversion Rate', value: 'N/A', icon: TrendingUp, change: 'Analyzing', color: 'text-green-400' },
+          { label: 'Live Vacancies', value: postings?.length || 0, icon: FilePlus, change: 'Active', color: 'text-primary' },
+          { label: 'Talent Pool', value: 'N/A', icon: Users, change: 'Tracking', color: 'text-blue-400' },
+          { label: 'Engagements', value: 'N/A', icon: TrendingUp, change: 'Live', color: 'text-green-400' },
         ].map((stat) => (
-          <Card key={stat.label} className="glass-card border-white/5 rounded-2xl">
+          <Card key={stat.label} className="glass-card border-white/5 rounded-2xl hover:border-primary/20 transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className={`p-2.5 rounded-xl bg-white/5 ${stat.color}`}>
+                <div className={`p-2.5 rounded-xl bg-white/5 ${stat.color} shadow-inner`}>
                   <stat.icon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-tighter border-white/10 bg-white/2">
+                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-tighter border-white/10 bg-white/2 px-2 py-0.5">
                   {stat.change}
                 </Badge>
               </div>
@@ -101,44 +130,44 @@ export function EmployerDashboard() {
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black tracking-tight">Live Listings</h2>
-          <Button variant="ghost" className="text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">View History</Button>
+          <h2 className="text-2xl font-black tracking-tight">Active Recruitment Stream</h2>
+          <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5">Archive History</Button>
         </div>
         
-        <div className="glass-card rounded-4xl overflow-hidden border border-white/5 shadow-2xl">
-          <div className="hidden md:grid grid-cols-[1fr_140px_140px_140px_80px] gap-4 p-6 border-b border-white/5 bg-white/2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            <div>Position Details</div>
-            <div className="text-center">Applicant Count</div>
-            <div className="text-center">Status</div>
+        <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl">
+          <div className="hidden md:grid grid-cols-[1fr_140px_140px_140px_80px] gap-4 p-8 border-b border-white/5 bg-white/2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <div>Vacancy Identity</div>
+            <div className="text-center">Candidate Count</div>
+            <div className="text-center">Operational Status</div>
             <div className="text-center">Location</div>
             <div></div>
           </div>
           
           <div className="divide-y divide-white/5">
             {postings?.map((post) => (
-              <div key={post.id} className="grid grid-cols-1 md:grid-cols-[1fr_140px_140px_140px_80px] gap-4 p-6 items-center hover:bg-white/5 transition-all group">
+              <div key={post.id} className="grid grid-cols-1 md:grid-cols-[1fr_140px_140px_140px_80px] gap-4 p-8 items-center hover:bg-white/5 transition-all group">
                 <div className="space-y-1">
-                  <Link href={`/employer/job/${post.id}/applicants`} className="font-black text-lg group-hover:text-primary transition-colors block">
+                  <Link href={`/employer/job/${post.id}/applicants`} className="font-black text-xl group-hover:text-primary transition-colors block leading-tight">
                     {post.title}
                   </Link>
                   <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                    <Clock className="w-3 h-3" /> {post.jobType}
+                    <Clock className="w-3 h-3 text-primary" /> {post.jobType}
                   </p>
                 </div>
                 <div className="flex flex-col items-center justify-center">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-black px-4 py-1">
-                    Check
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-black px-4 py-1.5 text-[10px] tracking-widest">
+                    REVIEW
                   </Badge>
                 </div>
                 <div className="flex items-center justify-center">
                   <Badge 
                     className={
                       post.status === 'Active' 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20 font-black px-4 py-1' 
-                        : 'bg-muted/10 text-muted-foreground border-white/10 font-black px-4 py-1'
+                        ? 'bg-green-500/10 text-green-400 border-green-500/20 font-black px-4 py-1.5 text-[10px] tracking-widest' 
+                        : 'bg-muted/10 text-muted-foreground border-white/10 font-black px-4 py-1.5 text-[10px] tracking-widest'
                     }
                   >
-                    {post.status}
+                    {post.status.toUpperCase()}
                   </Badge>
                 </div>
                 <div className="text-center flex flex-col items-center justify-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
@@ -149,18 +178,18 @@ export function EmployerDashboard() {
                 <div className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/10 transition-colors">
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/10 transition-colors">
                         <MoreVertical className="w-5 h-5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="glass-card border-white/10 min-w-[180px] p-2">
-                      <DropdownMenuItem className="cursor-pointer font-bold rounded-lg py-3" asChild>
+                    <DropdownMenuContent align="end" className="glass-card border-white/10 min-w-[200px] p-2 rounded-2xl">
+                      <DropdownMenuItem className="cursor-pointer font-bold rounded-xl py-3" asChild>
                         <Link href={`/employer/job/${post.id}/applicants`}>
                           <Users className="w-4 h-4 mr-3 text-primary" /> Review Applicants
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer font-bold rounded-lg py-3">
-                        <ArrowUpRight className="w-4 h-4 mr-3 text-primary" /> Edit Posting
+                      <DropdownMenuItem className="cursor-pointer font-bold rounded-xl py-3">
+                        <ArrowUpRight className="w-4 h-4 mr-3 text-primary" /> Edit Parameters
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -168,8 +197,14 @@ export function EmployerDashboard() {
               </div>
             ))}
             {!postings?.length && (
-              <div className="p-10 text-center text-muted-foreground font-medium">
-                No active postings found. Start by creating your first job listing.
+              <div className="py-24 text-center text-muted-foreground font-medium flex flex-col items-center gap-4">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center">
+                  <FilePlus className="w-8 h-8 opacity-20" />
+                </div>
+                <p>No active recruitment pipelines found.</p>
+                <Link href="/employer/post-job">
+                  <Button variant="link" className="text-primary font-black uppercase text-xs">Publish your first role</Button>
+                </Link>
               </div>
             )}
           </div>
