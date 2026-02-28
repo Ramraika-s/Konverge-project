@@ -41,7 +41,9 @@ export function Navbar() {
     }
   };
 
+  // Only consider verification complete when all profile queries have finished resolving
   const isProfileLoading = isSeekerLoading || isEmployerLoading;
+  const isLoading = isUserLoading || (!!user && isProfileLoading);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
@@ -69,9 +71,10 @@ export function Navbar() {
               </Link>
             ))}
             
-            {user && !isProfileLoading && (
-              <div className="flex items-center gap-4 border-l border-white/10 pl-4">
-                {seekerProfile && (
+            {/* Show only the verified dashboard link to prevent "double dashboard" glitch */}
+            {!isLoading && user && (
+              <div className="flex items-center gap-4 border-l border-white/10 pl-4 animate-in fade-in duration-300">
+                {seekerProfile ? (
                   <Link
                     href="/dashboard/job-seeker"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
@@ -80,8 +83,7 @@ export function Navbar() {
                   >
                     Seeker Hub
                   </Link>
-                )}
-                {employerProfile && (
+                ) : employerProfile ? (
                   <Link
                     href="/dashboard/employer"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
@@ -90,8 +92,7 @@ export function Navbar() {
                   >
                     Employer Hub
                   </Link>
-                )}
-                {!seekerProfile && !employerProfile && (
+                ) : (
                   <Link
                     href="/dashboard"
                     className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
@@ -108,8 +109,8 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-4">
-            {isUserLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
             ) : !user ? (
               <>
                 <Link href="/auth#login">
@@ -137,7 +138,7 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
                   
-                  {seekerProfile && (
+                  {seekerProfile ? (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
                       <UserCircle className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
@@ -145,9 +146,7 @@ export function Navbar() {
                         <span className="text-[10px] text-muted-foreground">Manage applications</span>
                       </div>
                     </DropdownMenuItem>
-                  )}
-                  
-                  {employerProfile && (
+                  ) : employerProfile ? (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/employer')}>
                       <Building2 className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
@@ -155,9 +154,7 @@ export function Navbar() {
                         <span className="text-[10px] text-muted-foreground">Manage listings</span>
                       </div>
                     </DropdownMenuItem>
-                  )}
-
-                  {!seekerProfile && !employerProfile && (
+                  ) : (
                     <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard')}>
                       <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
                       <div className="flex flex-col">
@@ -190,36 +187,39 @@ export function Navbar() {
                     <Search className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                     Find Jobs
                   </Link>
-                  {user && !isProfileLoading && (
+                  {isLoading ? (
+                    <div className="flex items-center gap-4 px-2 py-4 animate-pulse">
+                       <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                       <span className="text-sm font-bold text-muted-foreground">Verifying access...</span>
+                    </div>
+                  ) : user ? (
                     <>
-                      {seekerProfile && (
+                      {seekerProfile ? (
                         <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
                           <UserCircle className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                           Job Seeker Hub
                         </Link>
-                      )}
-                      {employerProfile && (
+                      ) : employerProfile ? (
                         <Link href="/dashboard/employer" className="text-xl font-bold flex items-center gap-4 group">
                           <Building2 className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                           Employer Hub
                         </Link>
-                      )}
-                      {!seekerProfile && !employerProfile && (
+                      ) : (
                         <Link href="/dashboard" className="text-xl font-bold flex items-center gap-4 group">
                           <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                           Setup Dashboard
                         </Link>
                       )}
                     </>
-                  )}
+                  ) : null}
                   <hr className="border-white/5" />
-                  {!user ? (
+                  {!user && !isLoading ? (
                     <Link href="/auth#signup">
                       <Button className="w-full h-14 font-black gold-border-glow text-lg">Get Started</Button>
                     </Link>
-                  ) : (
+                  ) : user ? (
                     <Button variant="destructive" className="w-full h-14 font-black text-lg" onClick={handleLogout}>Log Out</Button>
-                  )}
+                  ) : null}
                 </div>
               </SheetContent>
             </Sheet>
