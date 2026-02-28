@@ -10,41 +10,38 @@ import { doc } from 'firebase/firestore';
 
 /**
  * @fileOverview Dashboard page specifically for Employers.
- * Includes strict role-based access control.
+ * Includes strict role-based access control and completeness checks.
  */
 export default function EmployerDashboardPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
 
-  // Guard: Check if user has a job seeker profile
-  const jobSeekerRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, 'jobseekerProfile', user.uid);
-  }, [db, user]);
+  // Guard: Check for job seeker profile (to prevent cross-role access)
+  const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
-  // Guard: Check if user has an employer profile
-  const employerRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, 'employerProfiles', user.uid);
-  }, [db, user]);
+  // Guard: Check for employer profile
+  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    // Wait for all checks to finish
+    if (isUserLoading || isJobSeekerLoading || isEmployerLoading) return;
+
+    if (!user) {
       router.push('/auth');
       return;
     }
 
-    // Role Guard: If user is actually a job seeker, redirect them
-    if (!isJobSeekerLoading && jobSeekerProfile) {
+    // Role Guard: If user is actually a job seeker, move them to their correct hub
+    if (jobSeekerProfile && jobSeekerProfile.educationSummary) {
       router.replace('/dashboard/job-seeker');
       return;
     }
 
-    // Profile Completion Guard: If user has no profile at all, go to setup hub
-    if (!isEmployerLoading && !employerProfile && !isJobSeekerLoading && !jobSeekerProfile) {
+    // Completion Guard: If no employer profile exists OR it's incomplete, go to the router
+    if (!employerProfile || !employerProfile.companyWebsite) {
       router.replace('/dashboard');
     }
   }, [user, isUserLoading, jobSeekerProfile, isJobSeekerLoading, employerProfile, isEmployerLoading, router]);
@@ -57,8 +54,8 @@ export default function EmployerDashboardPage() {
     );
   }
 
-  // Final check to ensure we only render for employers
-  if (!user || jobSeekerProfile || !employerProfile) return null;
+  // Final render check
+  if (!user || !employerProfile || !employerProfile.companyWebsite) return null;
 
   return (
     <div className="container mx-auto px-4 py-12">

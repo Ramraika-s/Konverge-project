@@ -18,32 +18,32 @@ export default function DashboardPage() {
   const router = useRouter();
 
   // Check for Job Seeker Profile
-  const jobSeekerRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, 'jobseekerProfile', user.uid);
-  }, [db, user]);
+  const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
   // Check for Employer Profile
-  const employerRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, 'employerProfiles', user.uid);
-  }, [db, user]);
+  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    // 1. Wait for everything to load
+    if (isUserLoading || isJobSeekerLoading || isEmployerLoading) return;
+
+    // 2. Auth Guard
+    if (!user) {
       router.push('/auth');
       return;
     }
 
-    // SUCCESS: Profile exists AND is fully populated with professional data
+    // 3. Routing Logic: Redirect if a valid, COMPLETE profile exists
+    // A profile is complete if it has its specific identifying field (educationSummary or companyWebsite)
     if (jobSeekerProfile && jobSeekerProfile.educationSummary) {
       router.replace('/dashboard/job-seeker');
     } else if (employerProfile && employerProfile.companyWebsite) {
       router.replace('/dashboard/employer');
     }
-  }, [user, isUserLoading, jobSeekerProfile, employerProfile, router]);
+    // Otherwise, we stay on this page to show the ProfileCompletionForm
+  }, [user, isUserLoading, isJobSeekerLoading, isEmployerLoading, jobSeekerProfile, employerProfile, router]);
 
   const isGlobalLoading = isUserLoading || isJobSeekerLoading || isEmployerLoading;
 
@@ -57,7 +57,7 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  // If profile is missing OR incomplete, show the progressive completion form
+  // If we reach here, it means the user is logged in but profile is either missing or incomplete
   return (
     <div className="container mx-auto px-4 py-24">
       <ProfileCompletionForm />
