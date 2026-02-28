@@ -26,7 +26,7 @@ export default function JobSeekerDashboardPage() {
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
   useEffect(() => {
-    // Wait for all checks to finish
+    // Wait for all checks to finish definitively
     if (isUserLoading || isEmployerLoading || isJobSeekerLoading) return;
 
     if (!user) {
@@ -34,13 +34,14 @@ export default function JobSeekerDashboardPage() {
       return;
     }
 
-    // Role Guard: If user is actually an employer, move them to their correct hub
+    // Role Guard: If user is actually an employer with a complete profile, move them.
     if (employerProfile && employerProfile.companyWebsite) {
       router.replace('/dashboard/employer');
       return;
     }
 
-    // Completion Guard: If no seeker profile exists OR it's incomplete, go to the router
+    // Completion Guard: If job seeker profile is missing or lacks professional details,
+    // send them back to the central router to finish setup.
     if (!jobSeekerProfile || !jobSeekerProfile.educationSummary) {
       router.replace('/dashboard');
     }
@@ -54,7 +55,7 @@ export default function JobSeekerDashboardPage() {
     );
   }
 
-  // Final render check
+  // Final render check: Ensure user is logged in AND profile is professional
   if (!user || !jobSeekerProfile || !jobSeekerProfile.educationSummary) return null;
 
   return (
