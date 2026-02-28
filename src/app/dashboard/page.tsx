@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { CacheService } from '@/lib/cache-service';
 import { Loader2, User, Building2, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
  * @fileOverview Central Dashboard Gatekeeper.
- * 1. Automatically pushes existing users to their respective hubs.
+ * 1. Automatically pushes existing users to their respective hubs using cache/sync.
  * 2. Provides new users (Google sign-ins) a PERMANENT choice between roles.
  */
 export default function DashboardPage() {
@@ -64,14 +65,19 @@ export default function DashboardPage() {
         updatedAt: new Date().toISOString(),
       };
 
+      // 1. Save to Firebase (Non-blocking)
       setDocumentNonBlocking(profileRef, skeletonData, { merge: true });
+
+      // 2. Immediate Cache Update for faster local redirection
+      await CacheService.set(`role_${user.uid}`, selectedRole);
+      await CacheService.set(`profile_${user.uid}`, skeletonData);
 
       toast({
         title: "Role Confirmed",
         description: `Your identity as a ${selectedRole === 'employer' ? 'Employer' : 'Job Seeker'} has been locked.`,
       });
 
-      // Push to the respective hub
+      // 3. Push to the respective hub
       router.push(selectedRole === 'employer' ? '/dashboard/employer' : '/dashboard/job-seeker');
     } catch (err: any) {
       toast({
@@ -94,7 +100,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Role Selection UI for Google/New users
   return (
     <div className="container max-w-4xl mx-auto px-4 py-12 space-y-12">
       <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">

@@ -1,5 +1,4 @@
-
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,6 +7,7 @@ import { doc } from 'firebase/firestore';
 import { signOut, deleteUser } from 'firebase/auth';
 import { deleteDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { CacheService } from '@/lib/cache-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +25,9 @@ import {
   Trash2, 
   ArrowLeft,
   Save,
-  Mail
+  Mail,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -39,19 +41,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function ProfilePage() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, role, profile } = useUser();
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-
-  const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
-  const { data: seekerProfile, isLoading: isSeekerLoading } = useDoc(seekerRef);
-  
-  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
-  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -71,47 +68,55 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (seekerProfile) {
+    if (profile) {
       setFormData({
-        firstName: seekerProfile.firstName || '',
-        lastName: seekerProfile.lastName || '',
-        contactNumber: seekerProfile.contactNumber || '',
-        educationSummary: seekerProfile.educationSummary || '',
-        skills: seekerProfile.skills?.join(', ') || '',
-      });
-    } else if (employerProfile) {
-      setFormData({
-        companyName: employerProfile.companyName || '',
-        companyWebsite: employerProfile.companyWebsite || '',
-        companyDescription: employerProfile.companyDescription || '',
-        contactPersonName: employerProfile.contactPersonName || '',
-        companyLocation: employerProfile.companyLocation || '',
-        contactNumber: employerProfile.contactNumber || '',
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
+        contactNumber: profile.contactNumber || '',
+        educationSummary: profile.educationSummary || '',
+        skills: profile.skills?.join(', ') || '',
+        companyName: profile.companyName || '',
+        companyWebsite: profile.companyWebsite || '',
+        companyDescription: profile.companyDescription || '',
+        contactPersonName: profile.contactPersonName || '',
+        companyLocation: profile.companyLocation || '',
       });
     }
-  }, [seekerProfile, employerProfile]);
+  }, [profile]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !db) return;
+    if (!user || !db || !role) return;
     setIsLoading(true);
 
     try {
-      const isEmployer = !!employerProfile;
-      const targetCollection = isEmployer ? 'employerProfiles' : 'jobseekerProfile';
+      const targetCollection = role === 'employer' ? 'employerProfiles' : 'jobseekerProfile';
       const profileRef = doc(db, targetCollection, user.uid);
       
-      const updateData = isEmployer ? {
-        ...formData,
+      const updateData = role === 'employer' ? {
+        companyName: formData.companyName,
+        companyWebsite: formData.companyWebsite,
+        companyDescription: formData.companyDescription,
+        contactPersonName: formData.contactPersonName,
+        companyLocation: formData.companyLocation,
+        contactNumber: formData.contactNumber,
         updatedAt: new Date().toISOString(),
       } : {
-        ...formData,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        contactNumber: formData.contactNumber,
+        educationSummary: formData.educationSummary,
         skills: formData.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
         updatedAt: new Date().toISOString(),
       };
 
+      // 1. Save to Firestore
       setDocumentNonBlocking(profileRef, updateData, { merge: true });
-      toast({ title: "Profile Updated", description: "Changes saved successfully." });
+
+      // 2. Immediate Cache Update
+      await CacheService.set(`profile_${user.uid}`, { ...profile, ...updateData });
+
+      toast({ title: "Profile Updated", description: "Changes saved and cached successfully." });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Update Failed", description: err.message });
     } finally {
@@ -125,12 +130,13 @@ export default function ProfilePage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!user || !db) return;
+    if (!user || !db || !role) return;
     setIsDeleting(true);
     try {
-      const collectionName = employerProfile ? 'employerProfiles' : 'jobseekerProfile';
+      const collectionName = role === 'employer' ? 'employerProfiles' : 'jobseekerProfile';
       await deleteDoc(doc(db, collectionName, user.uid));
       await deleteUser(user);
+      await CacheService.clear();
       toast({ title: "Account Deleted", description: "All data has been permanently removed." });
       router.push('/');
     } catch (err: any) {
@@ -143,7 +149,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (isUserLoading || isSeekerLoading || isEmployerLoading) {
+  if (isUserLoading) {
     return (
       <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
@@ -152,16 +158,17 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user || (!seekerProfile && !employerProfile)) {
+  if (!user || !role) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
-        <h1 className="text-2xl font-black mb-4">No Profile Found</h1>
-        <Button onClick={() => router.push('/dashboard')}>Setup Profile</Button>
+        <h1 className="text-2xl font-black mb-4">No Role Selected</h1>
+        <Button onClick={() => router.push('/dashboard')}>Choose Role</Button>
       </div>
     );
   }
 
-  const isEmployer = !!employerProfile;
+  const isEmployer = role === 'employer';
+  const isComplete = isEmployer ? !!profile?.companyWebsite : !!profile?.educationSummary;
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-12 space-y-12">
@@ -175,13 +182,23 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {!isComplete && (
+        <Alert className="bg-primary/10 border-primary/20 rounded-3xl p-6">
+          <AlertCircle className="h-5 w-5 text-primary" />
+          <AlertTitle className="text-lg font-black tracking-tight">Complete Your Onboarding</AlertTitle>
+          <AlertDescription className="text-sm font-medium mt-1">
+            Fill out the details below to unlock your full professional reach. Incomplete profiles are hidden from search.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid lg:grid-cols-[1fr_300px] gap-8">
         <div className="space-y-8">
           <Card className="glass-card border-white/5 rounded-3xl overflow-hidden shadow-2xl">
             <CardHeader className="bg-primary/5 border-b border-white/5">
               <CardTitle className="text-xl flex items-center gap-2">
                 {isEmployer ? <Building2 className="w-5 h-5 text-primary" /> : <User className="w-5 h-5 text-primary" />}
-                Personal Information
+                {isEmployer ? 'Company Information' : 'Personal Information'}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
@@ -193,7 +210,7 @@ export default function ProfilePage() {
                       <Input 
                         value={formData.firstName || ''} 
                         onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl"
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
                       />
                     </div>
                     <div className="space-y-2">
@@ -201,23 +218,25 @@ export default function ProfilePage() {
                       <Input 
                         value={formData.lastName || ''} 
                         onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl"
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
                       />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Education Summary</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Professional Bio / Education</Label>
                       <Textarea 
+                        placeholder="Highlight your background and aspirations..."
                         value={formData.educationSummary || ''} 
                         onChange={(e) => setFormData({...formData, educationSummary: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl min-h-[100px]"
+                        className="bg-white/5 border-white/10 rounded-xl min-h-[140px]"
                       />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Skills (Comma Separated)</Label>
                       <Input 
+                        placeholder="React, Python, Project Management..."
                         value={formData.skills || ''} 
                         onChange={(e) => setFormData({...formData, skills: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl"
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
                       />
                     </div>
                   </div>
@@ -228,39 +247,49 @@ export default function ProfilePage() {
                       <Input 
                         value={formData.companyName || ''} 
                         onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl"
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Website</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
                       <Input 
+                        value={formData.contactPersonName || ''} 
+                        onChange={(e) => setFormData({...formData, contactPersonName: e.target.value})}
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Official Website</Label>
+                      <Input 
+                        placeholder="https://company.com"
                         value={formData.companyWebsite || ''} 
                         onChange={(e) => setFormData({...formData, companyWebsite: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl"
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">About the Company</Label>
                       <Textarea 
+                        placeholder="Describe your company's mission and industry focus..."
                         value={formData.companyDescription || ''} 
                         onChange={(e) => setFormData({...formData, companyDescription: e.target.value})}
-                        className="bg-white/5 border-white/10 rounded-xl min-h-[120px]"
+                        className="bg-white/5 border-white/10 rounded-xl min-h-[140px]"
                       />
                     </div>
                   </div>
                 )}
                 
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Number</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Phone</Label>
                   <Input 
                     value={formData.contactNumber || ''} 
                     onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
-                    className="bg-white/5 border-white/10 rounded-xl"
+                    className="bg-white/5 border-white/10 rounded-xl h-12"
                   />
                 </div>
 
-                <Button type="submit" disabled={isLoading} className="w-full h-12 font-black gold-border-glow rounded-xl">
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
+                <Button type="submit" disabled={isLoading} className="w-full h-14 font-black gold-border-glow rounded-xl text-lg mt-4">
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 mr-3" /> Save Professional Profile</>}
                 </Button>
               </form>
             </CardContent>
@@ -268,32 +297,32 @@ export default function ProfilePage() {
         </div>
 
         <aside className="space-y-6">
-          <Card className="glass-card border-white/5 rounded-3xl overflow-hidden">
-            <CardHeader className="bg-white/2 border-b border-white/5">
+          <Card className="glass-card border-white/5 rounded-3xl overflow-hidden shadow-xl">
+            <CardHeader className="bg-white/2 border-b border-white/5 p-6">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" /> Account
+                <Shield className="w-4 h-4 text-primary" /> Security
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="space-y-1 mb-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Logged in as</p>
-                <p className="text-sm font-bold flex items-center gap-2 truncate"><Mail className="w-3 h-3" /> {user.email}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Network ID</p>
+                <p className="text-xs font-bold flex items-center gap-2 truncate text-white">{user.email}</p>
               </div>
-              <Button variant="outline" className="w-full h-11 font-bold border-white/10 rounded-xl" onClick={handleLogout}>
+              <Button variant="outline" className="w-full h-11 font-bold border-white/10 rounded-xl hover:bg-white/5" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" /> Log Out
               </Button>
               
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full h-11 font-black rounded-xl">
-                    <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+                    <Trash2 className="w-4 h-4 mr-2" /> Terminate Account
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-card border-white/10 rounded-3xl">
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-2xl font-black">Permanent Deletion</AlertDialogTitle>
+                    <AlertDialogTitle className="text-2xl font-black">Permanent Termination</AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">
-                      This action is irreversible. All your professional data, history, and access will be wiped from Konnex.
+                      This action is irreversible. Your professional history and all association with Konnex will be deleted immediately.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="gap-2">
@@ -302,7 +331,7 @@ export default function ProfilePage() {
                       className="rounded-xl font-black bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       onClick={handleDeleteAccount}
                     >
-                      {isDeleting ? "Processing..." : "Delete Permanently"}
+                      {isDeleting ? "Processing..." : "Confirm Deletion"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -311,10 +340,19 @@ export default function ProfilePage() {
           </Card>
 
           <Card className="glass-card border-white/5 rounded-3xl p-6 bg-primary/5">
-            <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-2">Pro Tip</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Complete your profile to increase your visibility to {isEmployer ? 'top talent' : 'premium employers'} by up to 40%.
-            </p>
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-2 flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Identity Status
+            </h4>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Role</span>
+                <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-tighter bg-primary/10 text-primary border-primary/20">{role}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Verified</span>
+                <span className="text-[10px] font-black uppercase text-green-400">{isComplete ? 'YES' : 'PENDING'}</span>
+              </div>
+            </div>
           </Card>
         </aside>
       </div>
