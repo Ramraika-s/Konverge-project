@@ -18,7 +18,6 @@ import {
   User, 
   Building2, 
   Phone, 
-  MapPin, 
   Globe, 
   FileText, 
   Shield, 
@@ -57,8 +56,19 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Form States
-  const [formData, setFormData] = useState<any>({});
+  // Form States - Initialized with null-safe access patterns
+  const [formData, setFormData] = useState<any>({
+    firstName: '',
+    lastName: '',
+    contactNumber: '',
+    educationSummary: '',
+    skills: '',
+    companyName: '',
+    companyWebsite: '',
+    companyDescription: '',
+    contactPersonName: '',
+    companyLocation: '',
+  });
 
   useEffect(() => {
     if (seekerProfile) {
@@ -76,6 +86,7 @@ export default function ProfilePage() {
         companyDescription: employerProfile.companyDescription || '',
         contactPersonName: employerProfile.contactPersonName || '',
         companyLocation: employerProfile.companyLocation || '',
+        contactNumber: employerProfile.contactNumber || '',
       });
     }
   }, [seekerProfile, employerProfile]);
@@ -145,7 +156,7 @@ export default function ProfilePage() {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-black mb-4">No Profile Found</h1>
-        <Button onClick={() => router.push('/dashboard/job-seeker')}>Setup Profile</Button>
+        <Button onClick={() => router.push('/dashboard')}>Setup Profile</Button>
       </div>
     );
   }
@@ -180,7 +191,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">First Name</Label>
                       <Input 
-                        value={formData.firstName} 
+                        value={formData.firstName || ''} 
                         onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl"
                       />
@@ -188,7 +199,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Name</Label>
                       <Input 
-                        value={formData.lastName} 
+                        value={formData.lastName || ''} 
                         onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl"
                       />
@@ -196,7 +207,7 @@ export default function ProfilePage() {
                     <div className="space-y-2 sm:col-span-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Education Summary</Label>
                       <Textarea 
-                        value={formData.educationSummary} 
+                        value={formData.educationSummary || ''} 
                         onChange={(e) => setFormData({...formData, educationSummary: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl min-h-[100px]"
                       />
@@ -204,7 +215,7 @@ export default function ProfilePage() {
                     <div className="space-y-2 sm:col-span-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Skills (Comma Separated)</Label>
                       <Input 
-                        value={formData.skills} 
+                        value={formData.skills || ''} 
                         onChange={(e) => setFormData({...formData, skills: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl"
                       />
@@ -215,7 +226,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Company Name</Label>
                       <Input 
-                        value={formData.companyName} 
+                        value={formData.companyName || ''} 
                         onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl"
                       />
@@ -223,7 +234,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Website</Label>
                       <Input 
-                        value={formData.companyWebsite} 
+                        value={formData.companyWebsite || ''} 
                         onChange={(e) => setFormData({...formData, companyWebsite: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl"
                       />
@@ -231,7 +242,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">About the Company</Label>
                       <Textarea 
-                        value={formData.companyDescription} 
+                        value={formData.companyDescription || ''} 
                         onChange={(e) => setFormData({...formData, companyDescription: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl min-h-[120px]"
                       />
@@ -242,7 +253,7 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Number</Label>
                   <Input 
-                    value={formData.contactNumber} 
+                    value={formData.contactNumber || ''} 
                     onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
                     className="bg-white/5 border-white/10 rounded-xl"
                   />
