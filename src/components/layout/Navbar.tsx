@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Briefcase, Search, User, LogOut, Menu, Loader2, UserCircle, Building2 } from 'lucide-react';
+import { Briefcase, Search, User, LogOut, Menu, Loader2, UserCircle, Building2, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -13,14 +12,23 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
+  const db = useFirestore();
   const { user, isUserLoading } = useUser();
+
+  // Role detection for the Navbar
+  const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
+  const { data: seekerProfile, isLoading: isSeekerLoading } = useDoc(seekerRef);
+  
+  const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
+  const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
   
   const navLinks = [
     { name: 'Find Jobs', href: '/jobs', icon: Search },
@@ -32,6 +40,8 @@ export function Navbar() {
       router.push('/');
     }
   };
+
+  const isProfileLoading = isSeekerLoading || isEmployerLoading;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
@@ -58,24 +68,39 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            {user && (
+            
+            {user && !isProfileLoading && (
               <div className="flex items-center gap-4 border-l border-white/10 pl-4">
-                <Link
-                  href="/dashboard/job-seeker"
-                  className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
-                    pathname === '/dashboard/job-seeker' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Seeker Hub
-                </Link>
-                <Link
-                  href="/dashboard/employer"
-                  className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
-                    pathname === '/dashboard/employer' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Employer Hub
-                </Link>
+                {seekerProfile && (
+                  <Link
+                    href="/dashboard/job-seeker"
+                    className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
+                      pathname === '/dashboard/job-seeker' ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Seeker Hub
+                  </Link>
+                )}
+                {employerProfile && (
+                  <Link
+                    href="/dashboard/employer"
+                    className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
+                      pathname === '/dashboard/employer' ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Employer Hub
+                  </Link>
+                )}
+                {!seekerProfile && !employerProfile && (
+                  <Link
+                    href="/dashboard"
+                    className={`text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary ${
+                      pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Setup Dashboard
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -111,20 +136,37 @@ export function Navbar() {
                     <p className="text-sm font-medium truncate text-white">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
-                    <UserCircle className="mr-3 h-5 w-5 text-primary" /> 
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm">Job Seeker Hub</span>
-                      <span className="text-[10px] text-muted-foreground">Manage applications</span>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/employer')}>
-                    <Building2 className="mr-3 h-5 w-5 text-primary" /> 
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm">Employer Hub</span>
-                      <span className="text-[10px] text-muted-foreground">Manage listings</span>
-                    </div>
-                  </DropdownMenuItem>
+                  
+                  {seekerProfile && (
+                    <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/job-seeker')}>
+                      <UserCircle className="mr-3 h-5 w-5 text-primary" /> 
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">Job Seeker Hub</span>
+                        <span className="text-[10px] text-muted-foreground">Manage applications</span>
+                      </div>
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {employerProfile && (
+                    <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard/employer')}>
+                      <Building2 className="mr-3 h-5 w-5 text-primary" /> 
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">Employer Hub</span>
+                        <span className="text-[10px] text-muted-foreground">Manage listings</span>
+                      </div>
+                    </DropdownMenuItem>
+                  )}
+
+                  {!seekerProfile && !employerProfile && (
+                    <DropdownMenuItem className="cursor-pointer rounded-lg py-3" onClick={() => router.push('/dashboard')}>
+                      <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> 
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">Complete Setup</span>
+                        <span className="text-[10px] text-muted-foreground">Choose your role</span>
+                      </div>
+                    </DropdownMenuItem>
+                  )}
+
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem className="text-destructive cursor-pointer rounded-lg py-3" onClick={handleLogout}>
                     <LogOut className="mr-3 h-5 w-5" /> 
@@ -148,16 +190,26 @@ export function Navbar() {
                     <Search className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                     Find Jobs
                   </Link>
-                  {user && (
+                  {user && !isProfileLoading && (
                     <>
-                      <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
-                        <UserCircle className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                        Job Seeker Hub
-                      </Link>
-                      <Link href="/dashboard/employer" className="text-xl font-bold flex items-center gap-4 group">
-                        <Building2 className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                        Employer Hub
-                      </Link>
+                      {seekerProfile && (
+                        <Link href="/dashboard/job-seeker" className="text-xl font-bold flex items-center gap-4 group">
+                          <UserCircle className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                          Job Seeker Hub
+                        </Link>
+                      )}
+                      {employerProfile && (
+                        <Link href="/dashboard/employer" className="text-xl font-bold flex items-center gap-4 group">
+                          <Building2 className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                          Employer Hub
+                        </Link>
+                      )}
+                      {!seekerProfile && !employerProfile && (
+                        <Link href="/dashboard" className="text-xl font-bold flex items-center gap-4 group">
+                          <LayoutDashboard className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                          Setup Dashboard
+                        </Link>
+                      )}
                     </>
                   )}
                   <hr className="border-white/5" />
