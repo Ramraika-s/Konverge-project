@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   Loader2, 
@@ -28,7 +30,10 @@ import {
   Save,
   Mail,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Link as LinkIcon,
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -54,13 +59,18 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Form States - Initialized with null-safe access patterns
+  // Form States - Comprehensive set based on backend.json
   const [formData, setFormData] = useState<any>({
     firstName: '',
     lastName: '',
     contactNumber: '',
     educationSummary: '',
     skills: '',
+    resumeUrl: '',
+    portfolioUrl: '',
+    preferredRoles: '',
+    preferredLocations: '',
+    isRemotePreferred: false,
     companyName: '',
     companyWebsite: '',
     companyDescription: '',
@@ -76,6 +86,11 @@ export default function ProfilePage() {
         contactNumber: profile.contactNumber || '',
         educationSummary: profile.educationSummary || '',
         skills: profile.skills?.join(', ') || '',
+        resumeUrl: profile.resumeUrl || '',
+        portfolioUrl: profile.portfolioUrl || '',
+        preferredRoles: profile.preferredRoles?.join(', ') || '',
+        preferredLocations: profile.preferredLocations?.join(', ') || '',
+        isRemotePreferred: profile.isRemotePreferred || false,
         companyName: profile.companyName || '',
         companyWebsite: profile.companyWebsite || '',
         companyDescription: profile.companyDescription || '',
@@ -108,6 +123,11 @@ export default function ProfilePage() {
         contactNumber: formData.contactNumber,
         educationSummary: formData.educationSummary,
         skills: formData.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
+        resumeUrl: formData.resumeUrl,
+        portfolioUrl: formData.portfolioUrl,
+        preferredRoles: formData.preferredRoles.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
+        preferredLocations: formData.preferredLocations.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
+        isRemotePreferred: formData.isRemotePreferred,
         updatedAt: new Date().toISOString(),
       };
 
@@ -174,7 +194,7 @@ export default function ProfilePage() {
   const isComplete = isEmployer ? !!profile?.companyWebsite : !!profile?.educationSummary;
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-12 space-y-12">
+    <div className="container max-w-5xl mx-auto px-4 py-12 space-y-12">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2 font-bold group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
@@ -186,26 +206,29 @@ export default function ProfilePage() {
       </div>
 
       {!isComplete && (
-        <Alert className="bg-primary/10 border-primary/20 rounded-3xl p-6">
+        <Alert className="bg-primary/10 border-primary/20 rounded-3xl p-6 border-dashed">
           <AlertCircle className="h-5 w-5 text-primary" />
-          <AlertTitle className="text-lg font-black tracking-tight">Complete Your Onboarding</AlertTitle>
+          <AlertTitle className="text-lg font-black tracking-tight">Profile Completion Required</AlertTitle>
           <AlertDescription className="text-sm font-medium mt-1">
-            Fill out the details below to unlock your full professional reach. Incomplete profiles are hidden from search.
+            Fill out the details below to complete your professional onboarding. Incomplete profiles are less likely to be verified by partners.
           </AlertDescription>
         </Alert>
       )}
 
-      <div className="grid lg:grid-cols-[1fr_300px] gap-8">
+      <div className="grid lg:grid-cols-[1fr_320px] gap-8">
         <div className="space-y-8">
           <Card className="glass-card border-white/5 rounded-3xl overflow-hidden shadow-2xl">
             <CardHeader className="bg-primary/5 border-b border-white/5">
               <CardTitle className="text-xl flex items-center gap-2">
                 {isEmployer ? <Building2 className="w-5 h-5 text-primary" /> : <User className="w-5 h-5 text-primary" />}
-                {isEmployer ? 'Company Information' : 'Personal Information'}
+                {isEmployer ? 'Company Details' : 'Professional Profile'}
               </CardTitle>
+              <CardDescription>
+                {isEmployer ? 'Information that will be visible to job seekers.' : 'Your resume and skills are shared with potential employers.'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-8">
-              <form onSubmit={handleUpdate} className="space-y-6">
+              <form onSubmit={handleUpdate} className="space-y-8">
                 {!isEmployer ? (
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -225,28 +248,74 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Professional Bio / Education</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Professional Summary / Education</Label>
                       <Textarea 
-                        placeholder="Highlight your background and aspirations..."
+                        placeholder="Highlight your background, degrees, and career goals..."
                         value={formData.educationSummary || ''} 
                         onChange={(e) => setFormData({...formData, educationSummary: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl min-h-[140px]"
                       />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Skills (Comma Separated)</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Sparkles className="w-3 h-3 text-primary" /> Skills (Comma Separated)</Label>
                       <Input 
-                        placeholder="React, Python, Project Management..."
+                        placeholder="React, Python, AWS, Project Management..."
                         value={formData.skills || ''} 
                         onChange={(e) => setFormData({...formData, skills: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><LinkIcon className="w-3 h-3" /> Resume Link</Label>
+                      <Input 
+                        placeholder="Link to your PDF (Google Drive, Dropbox, etc.)"
+                        value={formData.resumeUrl || ''} 
+                        onChange={(e) => setFormData({...formData, resumeUrl: e.target.value})}
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Portfolio URL (Optional)</Label>
+                      <Input 
+                        placeholder="https://yourwebsite.com"
+                        value={formData.portfolioUrl || ''} 
+                        onChange={(e) => setFormData({...formData, portfolioUrl: e.target.value})}
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Roles</Label>
+                      <Input 
+                        placeholder="Software Engineer, Data Analyst..."
+                        value={formData.preferredRoles || ''} 
+                        onChange={(e) => setFormData({...formData, preferredRoles: e.target.value})}
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preferred Locations</Label>
+                      <Input 
+                        placeholder="New York, Remote, London..."
+                        value={formData.preferredLocations || ''} 
+                        onChange={(e) => setFormData({...formData, preferredLocations: e.target.value})}
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2 flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/2">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-bold">Remote Work Preferred</Label>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Toggle your work preference</p>
+                      </div>
+                      <Switch 
+                        checked={formData.isRemotePreferred} 
+                        onCheckedChange={(checked) => setFormData({...formData, isRemotePreferred: checked})}
                       />
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Company Name</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Legal Company Name</Label>
                       <Input 
                         value={formData.companyName || ''} 
                         onChange={(e) => setFormData({...formData, companyName: e.target.value})}
@@ -254,7 +323,7 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Representative</Label>
                       <Input 
                         value={formData.contactPersonName || ''} 
                         onChange={(e) => setFormData({...formData, contactPersonName: e.target.value})}
@@ -262,7 +331,7 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Official Website</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Company Website</Label>
                       <Input 
                         placeholder="https://company.com"
                         value={formData.companyWebsite || ''} 
@@ -271,9 +340,18 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">About the Company</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MapPin className="w-3 h-3" /> Headquarter Location</Label>
+                      <Input 
+                        placeholder="City, State, Country"
+                        value={formData.companyLocation || ''} 
+                        onChange={(e) => setFormData({...formData, companyLocation: e.target.value})}
+                        className="bg-white/5 border-white/10 rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Company Description</Label>
                       <Textarea 
-                        placeholder="Describe your company's mission and industry focus..."
+                        placeholder="Provide a brief overview of your company's mission..."
                         value={formData.companyDescription || ''} 
                         onChange={(e) => setFormData({...formData, companyDescription: e.target.value})}
                         className="bg-white/5 border-white/10 rounded-xl min-h-[140px]"
@@ -283,7 +361,7 @@ export default function ProfilePage() {
                 )}
                 
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Phone</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Verified Contact Number</Label>
                   <Input 
                     value={formData.contactNumber || ''} 
                     onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
@@ -292,7 +370,7 @@ export default function ProfilePage() {
                 </div>
 
                 <Button type="submit" disabled={isLoading} className="w-full h-14 font-black gold-border-glow rounded-xl text-lg mt-4">
-                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 mr-3" /> Save Professional Profile</>}
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 mr-3" /> Save Professional Changes</>}
                 </Button>
               </form>
             </CardContent>
@@ -303,12 +381,12 @@ export default function ProfilePage() {
           <Card className="glass-card border-white/5 rounded-3xl overflow-hidden shadow-xl">
             <CardHeader className="bg-white/2 border-b border-white/5 p-6">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" /> Security
+                <Shield className="w-4 h-4 text-primary" /> Security Hub
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="space-y-1 mb-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Network ID</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Auth Identifier</p>
                 <p className="text-xs font-bold flex items-center gap-2 truncate text-white">{user.email}</p>
               </div>
               <Button variant="outline" className="w-full h-11 font-bold border-white/10 rounded-xl hover:bg-white/5" onClick={handleLogout}>
@@ -318,23 +396,23 @@ export default function ProfilePage() {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full h-11 font-black rounded-xl">
-                    <Trash2 className="w-4 h-4 mr-2" /> Terminate Account
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete Account
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-card border-white/10 rounded-3xl">
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-2xl font-black">Permanent Termination</AlertDialogTitle>
+                    <AlertDialogTitle className="text-2xl font-black">Final Warning</AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">
-                      This action is irreversible. Your professional history and all association with Konnex will be deleted immediately.
+                      This action is permanent and irreversible. All your professional data, job applications, or postings will be wiped from the Konnex network.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="gap-2">
-                    <AlertDialogCancel className="rounded-xl font-bold border-white/10">Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className="rounded-xl font-bold border-white/10">Abort</AlertDialogCancel>
                     <AlertDialogAction 
                       className="rounded-xl font-black bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       onClick={handleDeleteAccount}
                     >
-                      {isDeleting ? "Processing..." : "Confirm Deletion"}
+                      {isDeleting ? "Wiping Data..." : "Confirm Deletion"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -343,17 +421,27 @@ export default function ProfilePage() {
           </Card>
 
           <Card className="glass-card border-white/5 rounded-3xl p-6 bg-primary/5">
-            <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-2 flex items-center gap-2">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Identity Status
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Discovery Status
             </h4>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Role</span>
-                <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-tighter bg-primary/10 text-primary border-primary/20">{role}</Badge>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Identity</span>
+                <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-tighter bg-primary/10 text-primary border-primary/20">
+                  {role}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Verified</span>
+                <span className={`text-[10px] font-black uppercase ${isComplete ? 'text-green-400' : 'text-amber-400'}`}>
+                  {isComplete ? 'ACTIVE' : 'PENDING'}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Verified</span>
-                <span className="text-[10px] font-black uppercase text-green-400">{isComplete ? 'YES' : 'PENDING'}</span>
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Visibility</span>
+                <span className={`text-[10px] font-black uppercase ${isComplete ? 'text-green-400' : 'text-red-400'}`}>
+                  {isComplete ? 'PUBLIC' : 'HIDDEN'}
+                </span>
               </div>
             </div>
           </Card>
