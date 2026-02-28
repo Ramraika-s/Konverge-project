@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -15,11 +16,11 @@ import {
   User, 
   Building2, 
   Phone, 
-  MapPin, 
   Globe, 
   Sparkles, 
   FileText,
-  ArrowRight
+  ArrowRight,
+  MapPin
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,6 +28,7 @@ export function ProfileCompletionForm() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const router = useRouter();
 
   const seekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: seekerDoc } = useDoc(seekerRef);
@@ -38,6 +40,7 @@ export function ProfileCompletionForm() {
   const [isEmployer, setIsEmployer] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Form fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -61,8 +64,9 @@ export function ProfileCompletionForm() {
       setCompanyName(employerDoc.companyName || '');
       setContactPersonName(employerDoc.contactPersonName || '');
     } else if (user?.displayName) {
-      setFirstName(user.displayName.split(' ')[0] || '');
-      setLastName(user.displayName.split(' ').slice(1).join(' ') || '');
+      const names = user.displayName.split(' ');
+      setFirstName(names[0] || '');
+      setLastName(names.slice(1).join(' ') || '');
       setContactPersonName(user.displayName);
     }
   }, [seekerDoc, employerDoc, user]);
@@ -86,6 +90,7 @@ export function ProfileCompletionForm() {
         contactEmail: user.email,
         contactNumber: contactNumber || "Not specified",
         companyLocation,
+        createdAt: employerDoc?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } : {
         id: user.uid,
@@ -95,19 +100,22 @@ export function ProfileCompletionForm() {
         contactNumber,
         educationSummary,
         skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
-        resumeUrl: `https://example.com/resumes/${user.uid}`,
+        resumeUrl: `https://example.com/resumes/${user.uid}`, // Dummy
         preferredRoles: [],
         preferredLocations: [],
         isRemotePreferred: true,
+        createdAt: seekerDoc?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
       setDocumentNonBlocking(profileRef, profileData, { merge: true });
 
       toast({
-        title: "Profile Refined",
-        description: `Your professional identity is now live.`,
+        title: "Profile Updated",
+        description: `Welcome to Konnex.`,
       });
+
+      // Redirect happens automatically due to page-level listeners on seekerDoc/employerDoc
       
     } catch (err: any) {
       toast({
@@ -123,8 +131,8 @@ export function ProfileCompletionForm() {
     return (
       <div className="max-w-3xl mx-auto text-center space-y-12 py-12">
         <div className="space-y-4">
-          <h1 className="text-5xl font-black tracking-tight text-white">One last <span className="text-primary gold-glow">step</span></h1>
-          <p className="text-xl text-muted-foreground max-w-xl mx-auto">To provide a premium experience, we need to know your professional role at Konnex.</p>
+          <h1 className="text-5xl font-black tracking-tight text-white">Join the <span className="text-primary gold-glow">Network</span></h1>
+          <p className="text-xl text-muted-foreground max-w-xl mx-auto">Select your path. This choice will customize your Konnex experience.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -140,7 +148,7 @@ export function ProfileCompletionForm() {
                 <User className="w-8 h-8" />
               </div>
               <CardTitle className="text-2xl font-bold mb-2">Job Seeker</CardTitle>
-              <CardDescription className="text-base text-muted-foreground">Find opportunities, track applications, and grow your career.</CardDescription>
+              <CardDescription className="text-base text-muted-foreground">Apply for premium roles and track your career growth.</CardDescription>
             </CardHeader>
           </Card>
 
@@ -156,7 +164,7 @@ export function ProfileCompletionForm() {
                 <Building2 className="w-8 h-8" />
               </div>
               <CardTitle className="text-2xl font-bold mb-2">Employer</CardTitle>
-              <CardDescription className="text-base text-muted-foreground">Post vacancies, manage talent, and build your team.</CardDescription>
+              <CardDescription className="text-base text-muted-foreground">Find top talent and manage your hiring pipeline.</CardDescription>
             </CardHeader>
           </Card>
         </div>
@@ -170,8 +178,8 @@ export function ProfileCompletionForm() {
         <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
           {isEmployer ? <Building2 className="w-6 h-6 text-primary-foreground" /> : <User className="w-6 h-6 text-primary-foreground" />}
         </div>
-        <CardTitle className="text-2xl font-black text-white">Refine your {isEmployer ? 'Employer' : 'Seeker'} Identity</CardTitle>
-        <CardDescription className="text-muted-foreground font-medium">Please provide your professional details to unlock your dashboard.</CardDescription>
+        <CardTitle className="text-2xl font-black text-white">Finalize your {isEmployer ? 'Organization' : 'Identity'}</CardTitle>
+        <CardDescription className="text-muted-foreground font-medium">Almost there. Fill in the details to enter your dashboard.</CardDescription>
       </CardHeader>
 
       <CardContent className="p-10">
@@ -189,40 +197,40 @@ export function ProfileCompletionForm() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Contact Number</Label>
-                <Input required placeholder="+1 234 567 890" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3" /> Phone Number</Label>
+                <Input required value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3" /> Education Summary</Label>
-                <Textarea required placeholder="E.g. Senior Year Computer Science Student at Stanford" value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3" /> Education/Bio</Label>
+                <Textarea required placeholder="Tell us about your background..." value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Sparkles className="w-3 h-3" /> Skills (comma separated)</Label>
-                <Input placeholder="React, TypeScript, UI Design" value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Input placeholder="React, Python, Sales..." value={skills} onChange={(e) => setSkills(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Building2 className="w-3 h-3" /> Company Name</Label>
-                <Input required placeholder="Acme Inc." value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Input required value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Company Website</Label>
-                <Input required placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Website</Label>
+                <Input required placeholder="https://company.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">About the Company</Label>
-                <Textarea placeholder="Tell us about your organization's mission and team culture..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Company Bio</Label>
+                <Textarea placeholder="Tell us about your mission..." value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} className="bg-white/5 border-white/10 min-h-[100px] rounded-xl" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Primary Contact</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Person</Label>
                   <Input required value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MapPin className="w-3 h-3" /> HQ Location</Label>
-                  <Input required placeholder="Silicon Valley, CA" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
+                  <Input required placeholder="City, Country" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
               </div>
             </div>

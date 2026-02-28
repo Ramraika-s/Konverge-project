@@ -24,13 +24,21 @@ export default function EmployerDashboardPage() {
 
   useEffect(() => {
     if (isDataLoading) return;
+
     if (!user) {
       router.replace('/auth');
       return;
     }
-    // Cross-role guard
+
+    // Role Enforcement: If they are a seeker, send them to the seeker hub
     if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
+      return;
+    }
+
+    // If no profile at all exists, send to central router for choice
+    if (!employerProfile) {
+      router.replace('/dashboard');
     }
   }, [user, isDataLoading, jobSeekerProfile, employerProfile, router]);
 
@@ -43,14 +51,14 @@ export default function EmployerDashboardPage() {
     );
   }
 
-  if (!user || jobSeekerProfile) return null;
+  if (!user || jobSeekerProfile || !employerProfile) return null;
 
-  // Check for professional marker
+  // Check for professional marker (e.g., companyWebsite)
   const isProfileComplete = !!employerProfile?.companyWebsite;
 
   return (
     <div className="container mx-auto px-4 py-12 space-y-12">
-      {!employerProfile || !isProfileComplete ? (
+      {!isProfileComplete ? (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <ProfileCompletionForm />
         </div>

@@ -24,15 +24,23 @@ export default function JobSeekerDashboardPage() {
 
   useEffect(() => {
     if (isDataLoading) return;
+
     if (!user) {
       router.replace('/auth');
       return;
     }
-    // Cross-role guard
+
+    // Role Enforcement: If they are an employer, send them to the employer hub
     if (employerProfile) {
       router.replace('/dashboard/employer');
+      return;
     }
-  }, [user, isDataLoading, employerProfile, router]);
+
+    // If no profile at all exists, send to central router for choice
+    if (!jobSeekerProfile) {
+      router.replace('/dashboard');
+    }
+  }, [user, isDataLoading, employerProfile, jobSeekerProfile, router]);
 
   if (isDataLoading) {
     return (
@@ -43,14 +51,14 @@ export default function JobSeekerDashboardPage() {
     );
   }
 
-  if (!user || employerProfile) return null;
+  if (!user || employerProfile || !jobSeekerProfile) return null;
 
-  // Check for professional marker
+  // Check for professional marker (e.g., educationSummary) to see if they've finished the "Details" step
   const isProfileComplete = !!jobSeekerProfile?.educationSummary;
 
   return (
     <div className="container mx-auto px-4 py-12 space-y-12">
-      {!jobSeekerProfile || !isProfileComplete ? (
+      {!isProfileComplete ? (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <ProfileCompletionForm />
         </div>
