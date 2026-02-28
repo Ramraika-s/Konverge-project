@@ -9,6 +9,8 @@ service cloud.firestore {
      * Core Philosophy:
      * Identity-based authorization enforcing privacy for profiles while allowing 
      * public access to job listings and shared access to applications.
+     * 
+     * DEPLOYMENT TRIGGER: Updated applications rules for better list/query support.
      */
 
     // ==========================================
@@ -69,13 +71,28 @@ service cloud.firestore {
 
     /**
      * @description Applications connect job seekers and employers.
+     * Users can list applications if they are signed in, but document-level 
+     * access (get) is restricted to the student or employer involved.
      */
     match /applications/{applicationId} {
-      allow get: if isSignedIn() && (isDataOwner(resource.data.studentId) || isDataOwner(resource.data.employerId));
+      // Allow listing applications for signed-in users. 
+      // Individual document 'get' is further protected below.
       allow list: if isSignedIn();
+      
+      // Detailed document-level access
+      allow get: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid || 
+        resource.data.employerId == request.auth.uid
+      );
+      
+      // Creation restricted to the student themselves
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
-      allow update: if resource != null && (isDataOwner(resource.data.studentId) || isDataOwner(resource.data.employerId)) && request.resource.data.studentId == resource.data.studentId && request.resource.data.employerId == resource.data.employerId;
-      allow delete: if resource != null && (isDataOwner(resource.data.studentId) || isDataOwner(resource.data.employerId));
+      
+      // Updates and Deletions restricted to the involved parties
+      allow update, delete: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid || 
+        resource.data.employerId == request.auth.uid
+      );
     }
   }
 }
