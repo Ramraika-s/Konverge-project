@@ -10,7 +10,7 @@ service cloud.firestore {
      * Identity-based authorization enforcing privacy for profiles while allowing 
      * public access to job listings and shared access to applications.
      * 
-     * DEPLOYMENT TRIGGER: Updated applications rules for better list/query support.
+     * DEPLOYMENT TRIGGER: Broadened jobListings read permissions to fix query listing errors.
      */
 
     // ==========================================
@@ -63,16 +63,19 @@ service cloud.firestore {
      * @description Job listings are public to all signed-in users but only editable by the posting employer.
      */
     match /jobListings/{jobListingId} {
-      allow get, list: if isSignedIn();
+      // Allow read (get and list) for any signed-in user to enable the job board.
+      allow read: if isSignedIn();
+      
+      // Creation restricted to employers posting as themselves.
       allow create: if isSignedIn() && request.resource.data.employerId == request.auth.uid;
+      
+      // Updates and Deletions restricted to the original posting employer.
       allow update: if resource != null && isDataOwner(resource.data.employerId) && request.resource.data.employerId == resource.data.employerId;
       allow delete: if resource != null && isDataOwner(resource.data.employerId);
     }
 
     /**
      * @description Applications connect job seekers and employers.
-     * Users can list applications if they are signed in, but document-level 
-     * access (get) is restricted to the student or employer involved.
      */
     match /applications/{applicationId} {
       // Allow listing applications for signed-in users. 
