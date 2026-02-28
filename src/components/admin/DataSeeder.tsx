@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -13,7 +12,7 @@ import jobsData from '@/data/jobs.json';
 /**
  * @fileOverview Administrative tool to seed Firestore with jobs from jobs.json.
  * Only visible to the user defined in NEXT_PUBLIC_ADMIN_EMAIL.
- * Enhanced to handle null values from external streams.
+ * Enhanced to handle null values from external streams and the updated array structure.
  */
 export function DataSeeder() {
   const db = useFirestore();
@@ -21,16 +20,23 @@ export function DataSeeder() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // Since jobs.json is now a direct array of job objects
+  const jobsArray = Array.isArray(jobsData) ? jobsData : [];
+
   const handleSeedData = async () => {
-    if (!db || isSeeding) return;
+    if (!db || isSeeding || jobsArray.length === 0) return;
 
     setIsSeeding(true);
     setProgress(0);
-    const total = jobsData.jobs.length;
+    const total = jobsArray.length;
 
     try {
       for (let i = 0; i < total; i++) {
-        const job = jobsData.jobs[i];
+        const job = jobsArray[i];
+        
+        // Skip invalid entries
+        if (!job || !job.id) continue;
+
         const jobRef = doc(db, 'jobListings', job.id);
 
         // Sanitize data: provide defaults for null/missing fields to maintain schema integrity
@@ -73,14 +79,14 @@ export function DataSeeder() {
           <Database className="w-4 h-4 text-primary" /> Admin Stream Ingest
         </CardTitle>
         <CardDescription className="text-xs font-medium">
-          Source: <span className="font-bold text-foreground">src/data/jobs.json</span> ({jobsData.jobs.length} items)
+          Source: <span className="font-bold text-foreground">src/data/jobs.json</span> ({jobsArray.length} items)
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-2">
         <div className="flex flex-col gap-4">
           <Button 
             onClick={handleSeedData} 
-            disabled={isSeeding}
+            disabled={isSeeding || jobsArray.length === 0}
             className="w-full h-11 font-black gold-border-glow rounded-xl gap-2"
           >
             {isSeeding ? (
