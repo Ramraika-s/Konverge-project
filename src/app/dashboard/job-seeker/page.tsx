@@ -5,12 +5,13 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { StudentDashboard } from '@/components/dashboard/StudentDashboard';
+import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 import { Loader2 } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 
 /**
- * @fileOverview Dashboard page specifically for Job Seekers.
- * Includes strict role-based access control and completeness checks.
+ * @fileOverview Job Seeker Dashboard.
+ * Shows the completion form if profile is incomplete, or the dashboard if complete.
  */
 export default function JobSeekerDashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -26,7 +27,6 @@ export default function JobSeekerDashboardPage() {
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
   useEffect(() => {
-    // Wait for all checks to finish definitively
     if (isUserLoading || isEmployerLoading || isJobSeekerLoading) return;
 
     if (!user) {
@@ -34,15 +34,13 @@ export default function JobSeekerDashboardPage() {
       return;
     }
 
-    // Role Guard: If user is actually an employer with a complete profile, move them to the correct hub.
-    if (employerProfile && employerProfile.companyWebsite) {
+    // Role Guard: If user is actually an employer, move them to the correct hub.
+    if (employerProfile) {
       router.replace('/dashboard/employer');
-      return;
     }
-
-    // Completion Guard: If job seeker profile is missing or lacks professional details,
-    // send them back to the central router to finish setup.
-    if (!jobSeekerProfile || !jobSeekerProfile.educationSummary) {
+    
+    // If no seeker profile exists at all, go back to central router to pick a role
+    if (!jobSeekerProfile) {
       router.replace('/dashboard');
     }
   }, [user, isUserLoading, employerProfile, isEmployerLoading, jobSeekerProfile, isJobSeekerLoading, router]);
@@ -55,18 +53,28 @@ export default function JobSeekerDashboardPage() {
     );
   }
 
-  // Final render check: Ensure user is logged in AND profile is professional
-  if (!user || !jobSeekerProfile || !jobSeekerProfile.educationSummary) return null;
+  if (!user || !jobSeekerProfile) return null;
+
+  // Check if profile is professionally complete (has educationSummary)
+  const isProfileComplete = !!jobSeekerProfile.educationSummary;
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="animate-in fade-in slide-in-from-left duration-500 mb-10">
-        <h1 className="text-4xl font-black mb-2 tracking-tight">Job Seeker <span className="text-primary gold-glow">Dashboard</span></h1>
-        <p className="text-muted-foreground font-medium">Manage your applications and professional growth.</p>
-      </div>
-      <div className="animate-in fade-in duration-700 slide-in-from-bottom-4">
-        <StudentDashboard />
-      </div>
+      {isProfileComplete ? (
+        <>
+          <div className="animate-in fade-in slide-in-from-left duration-500 mb-10">
+            <h1 className="text-4xl font-black mb-2 tracking-tight">Job Seeker <span className="text-primary gold-glow">Dashboard</span></h1>
+            <p className="text-muted-foreground font-medium">Manage your applications and professional growth.</p>
+          </div>
+          <div className="animate-in fade-in duration-700 slide-in-from-bottom-4">
+            <StudentDashboard />
+          </div>
+        </>
+      ) : (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ProfileCompletionForm />
+        </div>
+      )}
     </div>
   );
 }

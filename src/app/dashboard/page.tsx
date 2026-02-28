@@ -9,38 +9,34 @@ import { doc } from 'firebase/firestore';
 import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 
 /**
- * @fileOverview Central dashboard router with Progressive Profiling.
- * This is the ONLY page that shows the ProfileCompletionForm.
- * It detects profile completeness and pushes the user to the correct sub-route.
+ * @fileOverview Central dashboard router.
+ * Its ONLY purpose is to forward users to /dashboard/job-seeker or /dashboard/employer.
+ * If no profile exists (e.g. fresh Google user), it shows the initial Role Choice.
  */
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
 
-  // 1. Check for Job Seeker Profile
+  // 1. Check for any existing profile skeleton
   const jobSeekerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'jobseekerProfile', user.uid), [db, user]);
   const { data: jobSeekerProfile, isLoading: isJobSeekerLoading } = useDoc(jobSeekerRef);
 
-  // 2. Check for Employer Profile
   const employerRef = useMemoFirebase(() => (!db || !user) ? null : doc(db, 'employerProfiles', user.uid), [db, user]);
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
-    // Wait for all auth and profile data to load definitively
     if (isUserLoading || isJobSeekerLoading || isEmployerLoading) return;
 
-    // Auth Guard: Not logged in? Go to auth.
     if (!user) {
       router.push('/auth');
       return;
     }
 
-    // Routing Logic: If a profile is COMPLETE, push them to their hub.
-    // Completeness is defined by having the professional identifying field.
-    if (jobSeekerProfile && jobSeekerProfile.educationSummary) {
+    // Direct routing: If ANY profile exists (skeleton or complete), push to the hub.
+    if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
-    } else if (employerProfile && employerProfile.companyWebsite) {
+    } else if (employerProfile) {
       router.replace('/dashboard/employer');
     }
   }, [user, isUserLoading, isJobSeekerLoading, isEmployerLoading, jobSeekerProfile, employerProfile, router]);
@@ -55,13 +51,12 @@ export default function DashboardPage() {
     );
   }
 
-  // Prevent flash of form before redirect if data is actually complete
-  const isProfileComplete = (jobSeekerProfile && !!jobSeekerProfile.educationSummary) || 
-                            (employerProfile && !!employerProfile.companyWebsite);
+  // If a profile already exists, we are redirecting, so show nothing to avoid flash
+  if (jobSeekerProfile || employerProfile) return null;
 
-  if (!user || isProfileComplete) return null;
-
-  // If we reach here, it means we have a user but their profile is incomplete.
+  // If we have a user but NO profile document exists at all (Google users), 
+  // show the choice step here. Once they choose, a skeleton is created and the 
+  // useEffect above will trigger a redirect to the correct hub.
   return (
     <div className="container mx-auto px-4 py-24">
       <ProfileCompletionForm />

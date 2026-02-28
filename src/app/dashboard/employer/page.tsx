@@ -5,12 +5,13 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { EmployerDashboard } from '@/components/dashboard/EmployerDashboard';
+import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 import { Loader2 } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 
 /**
- * @fileOverview Dashboard page specifically for Employers.
- * Includes strict role-based access control and completeness checks.
+ * @fileOverview Employer Dashboard.
+ * Shows the completion form if profile is incomplete, or the hub if complete.
  */
 export default function EmployerDashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -26,7 +27,6 @@ export default function EmployerDashboardPage() {
   const { data: employerProfile, isLoading: isEmployerLoading } = useDoc(employerRef);
 
   useEffect(() => {
-    // Wait for all checks to finish definitively
     if (isUserLoading || isJobSeekerLoading || isEmployerLoading) return;
 
     if (!user) {
@@ -34,15 +34,13 @@ export default function EmployerDashboardPage() {
       return;
     }
 
-    // Role Guard: If user is actually a job seeker with a complete profile, move them to the correct hub.
-    if (jobSeekerProfile && jobSeekerProfile.educationSummary) {
+    // Role Guard: If user is actually a job seeker, move them to the correct hub.
+    if (jobSeekerProfile) {
       router.replace('/dashboard/job-seeker');
-      return;
     }
 
-    // Completion Guard: If employer profile is missing or lacks professional details,
-    // send them back to the central router to finish setup.
-    if (!employerProfile || !employerProfile.companyWebsite) {
+    // If no employer profile exists at all, go back to central router to pick a role
+    if (!employerProfile) {
       router.replace('/dashboard');
     }
   }, [user, isUserLoading, jobSeekerProfile, isJobSeekerLoading, employerProfile, isEmployerLoading, router]);
@@ -55,18 +53,28 @@ export default function EmployerDashboardPage() {
     );
   }
 
-  // Final render check: Ensure user is logged in AND profile is professional
-  if (!user || !employerProfile || !employerProfile.companyWebsite) return null;
+  if (!user || !employerProfile) return null;
+
+  // Check if profile is professionally complete (has companyWebsite)
+  const isProfileComplete = !!employerProfile.companyWebsite;
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="animate-in fade-in slide-in-from-left duration-500 mb-10">
-        <h1 className="text-4xl font-black mb-2 tracking-tight">Employer <span className="text-primary gold-glow">Hub</span></h1>
-        <p className="text-muted-foreground font-medium">Manage your job listings and evaluate talent.</p>
-      </div>
-      <div className="animate-in fade-in duration-700 slide-in-from-bottom-4">
-        <EmployerDashboard />
-      </div>
+      {isProfileComplete ? (
+        <>
+          <div className="animate-in fade-in slide-in-from-left duration-500 mb-10">
+            <h1 className="text-4xl font-black mb-2 tracking-tight">Employer <span className="text-primary gold-glow">Hub</span></h1>
+            <p className="text-muted-foreground font-medium">Manage your job listings and evaluate talent.</p>
+          </div>
+          <div className="animate-in fade-in duration-700 slide-in-from-bottom-4">
+            <EmployerDashboard />
+          </div>
+        </>
+      ) : (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ProfileCompletionForm />
+        </div>
+      )}
     </div>
   );
 }
