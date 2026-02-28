@@ -52,8 +52,11 @@ export default function DashboardPage() {
       const skeletonData = selectedRole === 'employer' ? {
         id: user.uid,
         companyName: `${user.displayName || 'My Company'}`,
+        companyWebsite: '',
+        companyDescription: '',
         contactPersonName: user.displayName || 'Employer',
         contactEmail: user.email,
+        companyLocation: '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } : {
@@ -61,6 +64,14 @@ export default function DashboardPage() {
         firstName: user.displayName?.split(' ')[0] || 'User',
         lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
         email: user.email,
+        contactNumber: '',
+        educationSummary: '',
+        skills: [],
+        resumeUrl: '',
+        portfolioUrl: '',
+        preferredRoles: [],
+        preferredLocations: [],
+        isRemotePreferred: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

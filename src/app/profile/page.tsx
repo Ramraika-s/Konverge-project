@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -91,7 +90,7 @@ export default function ProfilePage() {
         portfolioUrl: profile.portfolioUrl || '',
         preferredRoles: profile.preferredRoles?.join(', ') || '',
         preferredLocations: profile.preferredLocations?.join(', ') || '',
-        isRemotePreferred: profile.isRemotePreferred || false,
+        isRemotePreferred: !!profile.isRemotePreferred,
         companyName: profile.companyName || '',
         companyWebsite: profile.companyWebsite || '',
         companyDescription: profile.companyDescription || '',
@@ -123,11 +122,11 @@ export default function ProfilePage() {
         lastName: formData.lastName,
         contactNumber: formData.contactNumber,
         educationSummary: formData.educationSummary,
-        skills: formData.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
+        skills: (formData.skills || '').split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
         resumeUrl: formData.resumeUrl,
         portfolioUrl: formData.portfolioUrl,
-        preferredRoles: formData.preferredRoles.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
-        preferredLocations: formData.preferredLocations.split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
+        preferredRoles: (formData.preferredRoles || '').split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
+        preferredLocations: (formData.preferredLocations || '').split(',').map((s: string) => s.trim()).filter((s: string) => s !== ''),
         isRemotePreferred: formData.isRemotePreferred,
         updatedAt: new Date().toISOString(),
       };
@@ -262,7 +261,7 @@ export default function ProfilePage() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-[10px] font-bold uppercase text-muted-foreground">Resume (Google Drive / Dropbox)</Label>
-                            {formData.resumeUrl && <a href={formData.resumeUrl} target="_blank" className="text-[10px] text-primary hover:underline flex items-center gap-1">Test Link <ExternalLink className="w-2.5 h-2.5" /></a>}
+                            {formData.resumeUrl && <a href={formData.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">Test Link <ExternalLink className="w-2.5 h-2.5" /></a>}
                           </div>
                           <Input 
                             placeholder="https://drive.google.com/file/d/..."
@@ -274,7 +273,7 @@ export default function ProfilePage() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-[10px] font-bold uppercase text-muted-foreground">Professional Portfolio / Website</Label>
-                            {formData.portfolioUrl && <a href={formData.portfolioUrl} target="_blank" className="text-[10px] text-primary hover:underline flex items-center gap-1">Test Link <ExternalLink className="w-2.5 h-2.5" /></a>}
+                            {formData.portfolioUrl && <a href={formData.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">Test Link <ExternalLink className="w-2.5 h-2.5" /></a>}
                           </div>
                           <Input 
                             placeholder="https://yourname.com"
@@ -320,7 +319,7 @@ export default function ProfilePage() {
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Prioritize remote-first roles</p>
                       </div>
                       <Switch 
-                        checked={formData.isRemotePreferred} 
+                        checked={!!formData.isRemotePreferred} 
                         onCheckedChange={(checked) => setFormData({...formData, isRemotePreferred: checked})}
                       />
                     </div>

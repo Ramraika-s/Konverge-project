@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -44,6 +43,7 @@ export function ProfileCompletionForm() {
   const [skills, setSkills] = useState('');
   const [educationSummary, setEducationSummary] = useState('');
   const [resumeUrl, setResumeUrl] = useState('');
+  const [portfolioUrl, setPortfolioUrl] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [companyDescription, setCompanyDescription] = useState('');
@@ -58,6 +58,7 @@ export function ProfileCompletionForm() {
       setEducationSummary(seekerDoc.educationSummary || '');
       setSkills(seekerDoc.skills?.join(', ') || '');
       setResumeUrl(seekerDoc.resumeUrl || '');
+      setPortfolioUrl(seekerDoc.portfolioUrl || '');
     } else if (employerDoc) {
       setCompanyName(employerDoc.companyName || '');
       setContactPersonName(employerDoc.contactPersonName || '');
@@ -93,6 +94,7 @@ export function ProfileCompletionForm() {
         contactNumber,
         educationSummary,
         resumeUrl,
+        portfolioUrl,
         skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
         updatedAt: new Date().toISOString(),
       };
@@ -138,14 +140,23 @@ export function ProfileCompletionForm() {
                   <Input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
                 </div>
               </div>
+              
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3 text-primary" /> Resume Link</Label>
+                  <Input required type="url" placeholder="Google Drive Link" value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3 text-primary" /> Portfolio/Web URL</Label>
+                  <Input type="url" placeholder="https://yourname.com" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-3 h-3 text-primary" /> Contact Number</Label>
                 <Input required value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><FileText className="w-3 h-3 text-primary" /> Resume Link (Google Drive / Dropbox)</Label>
-                <Input required type="url" placeholder="https://drive.google.com/..." value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl" />
-              </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><LinkIcon className="w-3 h-3 text-primary" /> Professional Bio</Label>
                 <Textarea required placeholder="Describe your career goals and core expertise..." value={educationSummary} onChange={(e) => setEducationSummary(e.target.value)} className="bg-white/5 border-white/10 min-h-[120px] rounded-xl text-sm" />
