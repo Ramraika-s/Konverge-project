@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth, useUser, useFirestore } from '@/firebase';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { useAuth, useUser } from '@/firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,14 +16,12 @@ import { SignUpForm } from '@/components/auth/SignUpForm';
 
 export default function AuthPage() {
   const auth = useAuth();
-  const db = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('login');
   const [isLoading, setIsLoading] = useState(false);
-  const isCheckingRedirect = useRef(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -32,41 +30,6 @@ export default function AuthPage() {
       if (hash === '#login') setActiveTab('login');
     }
   }, []);
-
-  // Handle the result of the Google Redirect with a strict lock
-  useEffect(() => {
-    const checkRedirectResult = async () => {
-      // If auth isn't ready, OR if we are already checking, stop immediately.
-      if (!auth || isCheckingRedirect.current) return; 
-      
-      isCheckingRedirect.current = true; // Lock the function
-
-      try {
-        const result = await getRedirectResult(auth);
-        
-        if (result?.user) {
-          toast({
-            title: "Signed in with Google",
-            description: "Successfully authenticated.",
-          });
-          // Redirection to dashboard is handled by the user watcher below
-        }
-      } catch (err: any) {
-        // Only show error if it's not a known non-error state
-        if (err.code !== 'auth/no-auth-event' && err.code !== 'auth/operation-not-supported-in-this-environment') {
-          toast({
-            variant: "destructive",
-            title: "Google Auth Failed",
-            description: err.message || 'An error occurred during Google authentication.',
-          });
-        }
-      } finally {
-        isCheckingRedirect.current = false;
-      }
-    };
-
-    checkRedirectResult();
-  }, [auth, toast]);
 
   // Main user watcher for redirection
   useEffect(() => {
@@ -82,13 +45,25 @@ export default function AuthPage() {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      
+      if (result.user) {
+        toast({
+          title: "Signed in with Google",
+          description: "Successfully authenticated.",
+        });
+        // Redirection to dashboard is handled by the user watcher above
+      }
     } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Redirect Failed",
-        description: err.message || 'Could not connect to Google.',
-      });
+      // Only show error if it's not a known non-error state (like user closing the popup)
+      if (err.code !== 'auth/popup-closed-by-user') {
+        toast({
+          variant: "destructive",
+          title: "Google Auth Failed",
+          description: err.message || 'An error occurred during Google authentication.',
+        });
+      }
+    } finally {
       setIsLoading(false);
     }
   };
@@ -182,7 +157,7 @@ export default function AuthPage() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  {isLoading ? 'Redirecting...' : 'Sign in with Google'}
+                  {isLoading ? 'Connecting...' : 'Continue with Google'}
                 </Button>
               </div>
             </CardFooter>
