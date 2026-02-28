@@ -34,7 +34,7 @@ export default function EmployerDashboardPage() {
       return;
     }
 
-    // Role Guard: If user is actually a job seeker with a complete profile, move them.
+    // Role Guard: If user is actually a job seeker with a complete profile, move them to the correct hub.
     if (jobSeekerProfile && jobSeekerProfile.educationSummary) {
       router.replace('/dashboard/job-seeker');
       return;
@@ -49,7 +49,7 @@ export default function EmployerDashboardPage() {
 
   if (isUserLoading || isJobSeekerLoading || isEmployerLoading) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+      <div className="container mx-auto px-4 py-24 flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );

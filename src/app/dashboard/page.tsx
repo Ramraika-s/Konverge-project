@@ -49,15 +49,15 @@ export default function DashboardPage() {
 
   if (isDataLoading) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+      <div className="container mx-auto px-4 py-24 flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   // Prevent flash of form before redirect if data is actually complete
-  const isProfileComplete = (jobSeekerProfile && jobSeekerProfile.educationSummary) || 
-                            (employerProfile && employerProfile.companyWebsite);
+  const isProfileComplete = (jobSeekerProfile && !!jobSeekerProfile.educationSummary) || 
+                            (employerProfile && !!employerProfile.companyWebsite);
 
   if (!user || isProfileComplete) return null;
 
