@@ -15,7 +15,8 @@ import {
   Eye,
   CheckCircle2,
   Clock,
-  Loader2
+  Loader2,
+  MapPin
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
+import { DataSeeder } from '@/components/admin/DataSeeder';
 
 export function EmployerDashboard() {
   const { user } = useUser();
@@ -41,6 +43,9 @@ export function EmployerDashboard() {
 
   const { data: postings, isLoading } = useCollection(jobsQuery);
 
+  // Check if current user is admin
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -56,14 +61,16 @@ export function EmployerDashboard() {
           <h2 className="text-2xl font-black tracking-tight">Recruitment Overview</h2>
           <p className="text-muted-foreground text-sm font-medium">Tracking your organization's talent pipeline.</p>
         </div>
-        <Link href="/employer/post-job">
-          <Button className="gap-2 h-12 px-6 gold-border-glow font-bold rounded-xl w-full sm:w-auto">
-            <Plus className="w-4 h-4" /> Post a Vacancy
-          </Button>
-        </Link>
+        <div className="flex gap-4">
+           <Link href="/employer/post-job">
+            <Button className="gap-2 h-12 px-6 gold-border-glow font-bold rounded-xl w-full sm:w-auto">
+              <Plus className="w-4 h-4" /> Post a Vacancy
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
         {[
           { label: 'Active Postings', value: postings?.length || 0, icon: FilePlus, change: 'Updated', color: 'text-primary' },
           { label: 'Total Applicants', value: 'N/A', icon: Users, change: 'Tracking enabled', color: 'text-blue-400' },
@@ -84,6 +91,12 @@ export function EmployerDashboard() {
             </CardContent>
           </Card>
         ))}
+
+        {isAdmin && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+            <DataSeeder />
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -165,10 +178,3 @@ export function EmployerDashboard() {
     </div>
   );
 }
-
-const MapPin = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);

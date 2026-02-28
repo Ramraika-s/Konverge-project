@@ -1,0 +1,34 @@
+
+{
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 250,
+    "lastUpdated": "2025-02-28T10:30:00Z"
+  },
+  "jobs": [
+    {
+      "id": "indapi_12345",
+      "employerId": "techcorp",
+      "title": "Software Engineer - Fresher",
+      "description": "We are looking for enthusiastic software engineers to join our team...",
+      "location": "Bangalore, India",
+      "jobType": "Full-time",
+      "stipendMin": 0,
+      "stipendMax": 0,
+      "stipendCurrency": "INR",
+      "applicationDeadline": "2025-12-31T23:59:59Z",
+      "remoteOption": false,
+      "skillsRequired": [
+        "Python",
+        "JavaScript",
+        "SQL"
+      ],
+      "postedAt": "2024-09-27T02:15:00Z",
+      "updatedAt": "2024-09-27T02:15:00Z",
+      "status": "Active",
+      "applyLink": "https://techcorp.com/careers/software-engineer-fresher",
+      "source": "IndianAPI"
+    }
+  ]
+}
